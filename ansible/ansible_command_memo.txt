@@ -1,0 +1,1 @@
+ansible-playbook -i inventory -l ip -u ubuntu test.yaml -D --ask-vault-pass=~/.ssh/terraform-test-key.pem

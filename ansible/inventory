@@ -1,0 +1,9 @@
+
+[aws:children]
+linux
+
+[linux]
+35.79.224.17
+
+[windows]
+
