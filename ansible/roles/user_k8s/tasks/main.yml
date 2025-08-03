@@ -1,0 +1,31 @@
+- name: Create the k8s user
+  user:
+    name: k8s
+    shell: /bin/bash
+    create_home: yes
+
+- name: Add k8s to sudo group
+  user:
+    name: k8s
+    groups: sudo
+    append: yes
+
+- name: Add k8s to docker group
+  user:
+    name: k8s
+    groups: docker
+    append: yes
+
+- name: Allow passwordless sudo for k8s
+  copy:
+    dest: /etc/sudoers.d/k8s
+    content: "k8s ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+
+- name: Remove password for k8s (for su)
+  command: passwd -d k8s
+  args:
+    warn: false
+
