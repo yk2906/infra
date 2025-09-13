@@ -125,30 +125,47 @@ resource "oci_core_instance" "instance_1" {
   }
 }
 
-resource "oci_core_instance" "instance_2" {
+# resource "oci_core_instance" "instance_2" {
+#   availability_domain = var.availability_domain
+#   compartment_id      = var.compartment_ocid
+#   display_name        = "dev-instance-0102z"
+#   shape               = "VM.Standard.A1.Flex"
+
+#   create_vnic_details {
+#     subnet_id        = oci_core_subnet.subnet.id
+#     assign_public_ip = true
+#     display_name     = "dev-instance-vnic-0102z"
+#     nsg_ids          = [oci_core_network_security_group.my_nsg.id]
+#   }
+
+#   metadata = {
+#     ssh_authorized_keys = file(var.ssh_public_key_path)
+#   }
+
+#   source_details {
+#     source_type = "image"
+#     source_id   = var.image_ocid_2
+#   }
+
+#   shape_config {
+#     ocpus         = 2
+#     memory_in_gbs = 8
+#   }
+# }
+
+# Minecraft モジュール呼び出し
+module "minecraft" {
+  source = "./minecraft"
+
+  vm_name             = "minecraft-0101a"
+  vm_shape            = "VM.Standard.A1.Flex"
+  ocpus               = 2
+  memory_in_gbs       = 8
   availability_domain = var.availability_domain
-  compartment_id      = var.compartment_ocid
-  display_name        = "dev-instance-0102z"
-  shape               = "VM.Standard.A1.Flex"
+  compartment_ocid    = var.compartment_ocid
+  ssh_public_key_path = var.ssh_public_key_path
+  image_ocid          = var.image_ocid_1
 
-  create_vnic_details {
-    subnet_id        = oci_core_subnet.subnet.id
-    assign_public_ip = true
-    display_name     = "dev-instance-vnic-0102z"
-    nsg_ids          = [oci_core_network_security_group.my_nsg.id]
-  }
-
-  metadata = {
-    ssh_authorized_keys = file(var.ssh_public_key_path)
-  }
-
-  source_details {
-    source_type = "image"
-    source_id   = var.image_ocid_2
-  }
-
-  shape_config {
-    ocpus         = 2
-    memory_in_gbs = 8
-  }
+  subnet_id = oci_core_subnet.subnet.id
+  nsg_id    = oci_core_network_security_group.my_nsg.id
 }
