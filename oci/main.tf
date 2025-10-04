@@ -45,12 +45,11 @@ resource "oci_core_security_list" "user_custom_security_list" {
   vcn_id         = oci_core_virtual_network.vcn.id
   display_name   = "user_custom_security_list"
 
-  ingress_security_rules {
-    protocol = "6" # TCP
-    source   = var.my_ip_cidr
-    tcp_options {
-      min = 22
-      max = 22
+  dynamic "ingress_security_rules" {
+    for_each = var.allow_ips
+    content {
+      protocol = "all"
+      source   = ingress_security_rules.value
     }
   }
 
@@ -67,11 +66,13 @@ resource "oci_core_network_security_group" "my_nsg" {
 }
 
 resource "oci_core_network_security_group_security_rule" "inbound_rule" {
+  for_each = toset(var.allow_ips)
+
   network_security_group_id = oci_core_network_security_group.my_nsg.id
   direction                 = "INGRESS"
-  protocol                  = "all" # すべてのプロトコル
-  source                    = "60.71.16.38/32"
-  description               = "Allow all traffic from 60.71.16.38/32"
+  protocol                  = "all" # すべてのプロトコルを許可
+  source                    = each.key
+  description               = "Allow all traffic from ${each.key}"
 }
 
 resource "oci_core_network_security_group_security_rule" "outbound_rule" {

@@ -36,7 +36,9 @@ variable "image_ocid_2" {
   default     = "ocid1.image.oc1.ap-osaka-1.aaaaaaaaflfi3ylwcgxksvwae7z3e6dmxj5obsabsqytpo24ltqnamoidxuq"
 }
 
-variable "my_ip_cidr" {
-  description = "自分のグローバルIP（SSH用）"
-  default     = "60.71.16.38/32"
+variable "allow_ips" {
+  description = "許可するIPアドレスのリスト"
+  type        = list(string)
+  default     = ["60.71.16.38/32", "106.185.152.18/32"]
+
 }
