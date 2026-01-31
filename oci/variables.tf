@@ -39,6 +39,5 @@ variable "image_ocid_2" {
 variable "allow_ips" {
   description = "許可するIPアドレスのリスト"
   type        = list(string)
-  default     = ["60.71.16.38/32", "106.185.152.18/32"]
-
+  default     = ["60.71.16.38/32", "106.185.152.18/32", "60.130.227.208/32"]
 }
