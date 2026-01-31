@@ -41,3 +41,18 @@
 
     # Dockerグループは、Dockerインストール後に紐付ける必要があるため
     # ここではユーザー作成までにとどめます
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install common utilities
+      apt:
+        name:
+          - vim
+          - net-tools
+          - less
+          - curl     # ついでに入れておくと便利
+          - bash-completion # kubectl補完に必須
+        state: present
