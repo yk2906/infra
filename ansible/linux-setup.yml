@@ -1,0 +1,43 @@
+---
+- name: Create dedicated users for Ansible and K8s
+  hosts: all
+  become: true
+  vars:
+    # 登録したいあなたの公開鍵のパス
+    public_key_path: "~/.ssh/oci_terraform_key.pub"
+
+  tasks:
+    # 1. ansible ユーザーの作成
+    - name: Create ansible user
+      user:
+        name: ansible
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+
+    - name: Set up authorized_key for ansible
+      authorized_key:
+        user: ansible
+        state: present
+        key: "{{ lookup('file', public_key_path) }}"
+
+    - name: Allow passwordless sudo for ansible
+      copy:
+        content: "ansible ALL=(ALL) NOPASSWD: ALL"
+        dest: /etc/sudoers.d/ansible
+        mode: '0440'
+
+    # 2. k8s ユーザーの作成
+    - name: Create k8s user
+      user:
+        name: k8s
+        shell: /bin/bash
+
+    - name: Set up authorized_key for k8s
+      authorized_key:
+        user: k8s
+        state: present
+        key: "{{ lookup('file', public_key_path) }}"
+
+    # Dockerグループは、Dockerインストール後に紐付ける必要があるため
+    # ここではユーザー作成までにとどめます

@@ -1,0 +1,62 @@
+---
+- name: Setup Docker and kind
+  hosts: all
+  become: true
+  vars:
+    kind_version: "v0.26.0"
+    kubectl_version: "v1.32.0"
+    arch: "arm64" # OCI が ARM インスタンスなら arm64 に変更
+
+  tasks:
+    - name: Install Docker dependencies
+      apt:
+        name: [apt-transport-https, ca-certificates, curl, software-properties-common]
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Ensure Docker is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add k8s to docker group
+      user:
+        name: k8s
+        groups: docker
+        append: yes
+
+    - name: Download kind binary
+      get_url:
+        url: "https://kind.sigs.k8s.io/dl/{{ kind_version }}/kind-linux-{{ arch }}"
+        dest: /usr/local/bin/kind
+        mode: '0755'
+
+    - name: Download kubectl binary
+      get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/{{ arch }}/kubectl"
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    - name: Create kind cluster configuration
+      copy:
+        dest: /home/k8s/kind-config.yaml
+        owner: k8s
+        content: |
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+
+    - name: Create kind cluster
+      become: true
+      become_user: k8s
+      shell: |
+        kind create cluster --config /home/k8s/kind-config.yaml --name my-cluster
+      args:
+        creates: "/home/k8s/.kube/config" # すでに存在する場合はスキップ

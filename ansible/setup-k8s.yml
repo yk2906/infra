@@ -1,8 +1,0 @@
-- name: Setup Kubernetes environment
-  hosts: all
-  become: true
-
-  roles:
-    - role: user_k8s
-    - role: docker
-

@@ -1,8 +1,0 @@
-- name: Set timezone to Asia/Tokyo
-  hosts: linux
-  become: yes
-  gather_facts: yes
-  tasks:
-    - name: Set timezone to Asia/Tokyo
-      timezone:
-        name: Asia/Tokyo
