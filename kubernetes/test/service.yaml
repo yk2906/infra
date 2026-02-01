@@ -5,7 +5,7 @@ metadata:
   namespace: game-space
 spec:
   selector:
-    app: my-app
+    app: game-2048
   ports:
     - protocol: TCP
       port: 80
