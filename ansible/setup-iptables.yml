@@ -1,0 +1,32 @@
+- name: OSレベルのファイアウォールを完全に開放
+  hosts: all
+  become: yes
+  tasks:
+    - name: 全てのチェーンのデフォルトポリシーを ACCEPT に変更
+      ansible.builtin.iptables:
+        chain: "{{ item }}"
+        policy: ACCEPT
+      loop: [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+
+    - name: 現在の iptables ルールをフラッシュ（全削除）
+      ansible.builtin.iptables:
+        flush: yes
+
+    - name: NATテーブルのルールもフラッシュ
+      ansible.builtin.iptables:
+        table: nat
+        flush: yes
+
+    - name: 設定を永続化（iptables-persistent / netfilter-persistent）
+      ansible.builtin.shell: |
+        if command -v netfilter-persistent >/dev/null; then
+          netfilter-persistent save
+        fi
+      changed_when: false
+
+    - name: ufw がインストールされている場合は無効化
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+      ignore_errors: yes
