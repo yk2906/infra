@@ -2,6 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-app-ingress
+  annotations:
+    # Address が空でも Healthy とみなすように Argo CD に教える
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
   ingressClassName: nginx
   rules:
