@@ -1,0 +1,40 @@
+- name: Install Helm and Deploy an App
+  hosts: all
+  become: true
+  vars:
+    helm_version: "v3.14.0"
+    arch: "arm64"
+
+  tasks:
+    - name: Download Helm binary
+      get_url:
+        url: "https://get.helm.sh/helm-{{ helm_version }}-linux-{{ arch }}.tar.gz"
+        dest: /tmp/helm.tar.gz
+
+    - name: Unarchive Helm
+      unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+
+    - name: Move Helm to bin
+      copy:
+        src: "/tmp/linux-{{ arch }}/helm"
+        dest: /usr/local/bin/helm
+        mode: '0755'
+        remote_src: yes
+
+    - name: Add bitnami repository (App Storeの登録のようなもの)
+      become: true
+      become_user: k8s
+      kubernetes.core.helm_repository:
+        name: bitnami
+        repo_url: "https://charts.bitnami.com/bitnami"
+
+    - name: Install Nginx via Helm
+      become: true
+      become_user: k8s
+      kubernetes.core.helm:
+        name: my-nginx
+        chart_ref: bitnami/nginx
+        release_namespace: default
