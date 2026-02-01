@@ -23,10 +23,3 @@
           netfilter-persistent save
         fi
       changed_when: false
-
-    - name: ufw がインストールされている場合は無効化
-      ansible.builtin.systemd:
-        name: ufw
-        state: stopped
-        enabled: false
-      ignore_errors: yes
