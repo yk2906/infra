@@ -1,12 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: my-app-ingress
+  name: game-ingress
+  namespace: game-space
   annotations:
-    # Address が空でも Healthy とみなすように Argo CD に教える
-    argocd.argoproj.io/compare-options: IgnoreExtraneous
+    kubernetes.io/ingress.class: nginx
 spec:
-  ingressClassName: nginx
   rules:
   - http:
       paths:
@@ -14,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: my-app-service # 前に作った Service 名と合わせる
+            name: game-service
             port:
               number: 80
