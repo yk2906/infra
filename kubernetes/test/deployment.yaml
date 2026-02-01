@@ -4,12 +4,12 @@ metadata:
   name: my-app-deployment
   namespace: default
   labels:
-    app:my-app
+    app: my-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app:my-app
+      app: my-app
   template:
     metadata:
       labels:
