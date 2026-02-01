@@ -1,22 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app-deployment
-  namespace: default
-  labels:
-    app: my-app
+  name: game-2048
+  namespace: game-space
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
-      app: my-app
+      app: game-2048
   template:
     metadata:
       labels:
-        app: my-app
+        app: game-2048
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
+      - name: game-2048
+        image: alexwhen/docker-2048
         ports:
         - containerPort: 80
