@@ -1,0 +1,17 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # 使用するリソースの種類
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-deployment # オブジェクトの名前
+spec: # オブジェクトの詳細な設定。オブジェクトの望ましい状態を記述する。
+  replicas: 2 # Podの数を指定する。
+  selector: # Podのラベルを指定する。
+    matchLabels: # どのPodに対してこのDeploymentを適用するかを指定する。
+      app: web # webというラベルを持つPodに対してこのDeploymentを適用する。
+  template: # このDeploymentで作成するPodの設定を記述する。
+    metadata: 
+      labels: # L9で指定したラベル（この場合はweb）と一致するPodに対してこのDeploymentを適用する。
+        app: web
+    spec: # Podの中身の設定（コンテナのイメージ、ポート、環境変数など）を書く
+      containers: # Podの中身の設定（コンテナのイメージ、ポート、環境変数など）を書く
+      - name: nginx # コンテナの名前を指定する。
+        image: nginx:latest # コンテナのイメージを指定する。この場合はnginxの最新版を使用する。

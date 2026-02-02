@@ -1,0 +1,8 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Pod # 使用するリソースの種類
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-pod # オブジェクトの名前
+spec: # オブジェクトの詳細な設定。オブジェクトの望ましい状態を記述する。
+  containers:
+  - name: nginx-container
+    image: nginx:latest
