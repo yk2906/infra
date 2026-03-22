@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: steam-bot-service
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      nodePort: 30081
