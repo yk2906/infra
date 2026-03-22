@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/yk2906/infra.git
     targetRevision: HEAD
-    path: steam-bot/overlays/prod
+    path: kubernetes/steam-bot/overlays/prod
   destination:
     server: https://kubernetes.default.svc
     namespace: default
