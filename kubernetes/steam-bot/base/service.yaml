@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: steam-bot-service
+  name: steam-bot
 spec:
   selector:
     app: steam-bot
@@ -9,4 +9,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
+      nodePort: 30081
   type: ClusterIP
