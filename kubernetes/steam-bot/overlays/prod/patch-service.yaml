@@ -6,4 +6,4 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      nodePort: 30081
+      nodePort: 30081 # OCIのセキュリティ・リストで開けるポート
