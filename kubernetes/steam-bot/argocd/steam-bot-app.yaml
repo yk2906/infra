@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github/yk2906/infra.git
+    repoURL: https://github.com/yk2906/infra.git
     targetRevision: HEAD
     path: steam-bot/overlays/prod
   destination:
