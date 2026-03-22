@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: steam-bot
+  labels:
+    app: steam-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: steam-bot
+  template:
+    metadata:
+      labels:
+        app: steam-bot
+    spec:
+      containers:
+      - name: bot-container
+        image: steam-bot-image:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        env:
+          - name: APP_ENV
+            value: "production"
+        ports:
+        - containers: 8080
