@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: steam-bot-service
+  name: steam-bot
 spec:
   type: NodePort
   ports:
