@@ -2,12 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
 patches:
-  - path: patch-service.yaml
+- path: patch-service.yaml
 
 images:
-  - name: steam-bot-image
-    newName: ghcr.io/yk2906/steam-bot
-    newTag: initial
+- name: steam-bot-image
+  newName: ghcr.io/yk2906/steam-bot
+  newTag: 0f6ced79b4be00c50af901a7372ab177b36097d5
