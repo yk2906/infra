@@ -33,5 +33,10 @@ spec:
               secretKeyRef:
                 name: discord-token
                 key: token
+          - name: STEAM_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: discord-token
+                key: steam_key
         ports:
           - containerPort: 8080
