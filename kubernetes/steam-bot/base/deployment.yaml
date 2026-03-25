@@ -28,5 +28,10 @@ spec:
         env:
           - name: APP_ENV
             value: "production"
+          - name: DISCORD_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: discord-token
+                key: token
         ports:
           - containerPort: 8080
