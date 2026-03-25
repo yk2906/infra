@@ -12,4 +12,4 @@ patches:
 images:
 - name: steam-bot-image
   newName: ghcr.io/yk2906/steam-bot
-  newTag: fd483250c66e278061d4d55c76db7542fa261151
+  newTag: ed78905528f1f7ae1da599f05c754bd39612c6d5
