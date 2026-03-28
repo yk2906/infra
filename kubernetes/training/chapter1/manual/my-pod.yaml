@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual-study-pod
+spec:
+  containers:
+  - name: manual-nginx-container
+    image: nginx:latest
