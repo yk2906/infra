@@ -1,0 +1,12 @@
+- name: Install kubens
+  hosts: all
+  connection: local
+  become: yes
+  vars:
+    version: "v0.9.5"
+  tasks:
+    - name: Download kubens binary
+      get_url:
+        url: "https://raw.githubusercontent.com/ahmetb/kubectx/{{ version }}/kubens"
+        dest: "/usr/local/bin/kubens"
+        mode: '0755'

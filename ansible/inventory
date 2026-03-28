@@ -1,8 +1,12 @@
+[all]
+localhost ansible_connection=local
 
 [aws:children]
 linux
 
 [linux]
 217.142.224.159
+localhost
 
 [windows]
+
