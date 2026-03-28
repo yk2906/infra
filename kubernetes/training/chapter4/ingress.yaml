@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1 # Ingress API
+kind: Ingress # HTTP/HTTPS ルーティング（コントローラが実体を提供）
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-demo-ingress # Ingress名
+  # annotations: 環境・Ingressコントローラごとに SSL リダイレクト等を追加する
+spec: # ルール定義（chapter2 の Service 名を参照）
+  ingressClassName: nginx # 環境に合わせて変更または削除（クラスタデフォルトに任せる場合）
+  rules: # ホストとパスごとの振り分け
+  - host: demo.local # 手元検証では /etc/hosts にクラスタの入口IPを追加
+    http:
+      paths:
+      - path: /
+        pathType: Prefix # 前方一致
+        backend: # バックエンドService
+          service:
+            name: study-frontend-svc # chapter2
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: study-backend-svc # chapter2
+            port:
+              number: 80

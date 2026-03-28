@@ -1,0 +1,25 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # PVCをマウントしてデータをPod外に保持する例
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-app-with-pvc # Deployment名
+spec: # オブジェクトの望ましい状態
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-pvc-app
+  template:
+    metadata:
+      labels:
+        app: demo-pvc-app
+    spec:
+      containers:
+      - name: writer
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "while true; do date >> /data/out.log; sleep 60; done"]
+        volumeMounts: # PVCをコンテナ内パスにマウント
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: study-data-pvc # pvc.yaml で作成した名前と一致

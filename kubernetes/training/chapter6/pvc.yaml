@@ -1,0 +1,12 @@
+apiVersion: v1 # 使用するAPIのバージョン
+kind: PersistentVolumeClaim # 永続データ用（StorageClass は環境に合わせて指定）
+metadata: # オブジェクトを一意に特定するための情報
+  name: capstone-data
+  namespace: capstone-training
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  # TODO: storageClassName をクラスタに合わせて設定

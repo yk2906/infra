@@ -1,0 +1,11 @@
+apiVersion: v1 # 使用するAPIのバージョン
+kind: Service # Pod集合への安定したネットワークエンドポイント
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-backend-svc # バックエンド用Service名
+spec: # Serviceの望ましい状態
+  type: ClusterIP # クラスタ内部向け
+  selector: # study-backend DeploymentのPodにマッチ
+    app: demo-backend
+  ports:
+  - port: 80
+    targetPort: 80

@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1 # RBAC API
+kind: Role # 単一ネームスペース内の権限
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-pod-reader # Role名
+  namespace: default # serviceaccount-viewer と同じネームスペース
+rules: # 許可する操作
+- apiGroups: [""] # core API
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"] # 読み取りのみ

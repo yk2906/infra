@@ -1,0 +1,26 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # フロント（静的配信やBFFのプレースホルダ）
+metadata: # オブジェクトを一意に特定するための情報
+  name: capstone-web
+  namespace: capstone-training
+spec: # TODO: イメージ・環境変数・Probe・resources を要件に合わせて拡張
+  replicas: 1
+  selector:
+    matchLabels:
+      app: capstone-web
+  template:
+    metadata:
+      labels:
+        app: capstone-web
+    spec:
+      containers:
+      - name: web
+        image: nginx:alpine # 演習で独自イメージに差し替え可
+        ports:
+        - containerPort: 80
+        env:
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: capstone-config
+              key: APP_NAME

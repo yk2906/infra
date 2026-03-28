@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1 # Ingress API
+kind: Ingress # 外部から web / api へ振り分け（コントローラ必須）
+metadata: # オブジェクトを一意に特定するための情報
+  name: capstone-ingress
+  namespace: capstone-training
+spec: # TODO: ingressClassName と host を環境に合わせる。TLS は任意で追加
+  ingressClassName: nginx
+  rules:
+  - host: capstone.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: capstone-web-svc
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: capstone-api-svc
+            port:
+              number: 80

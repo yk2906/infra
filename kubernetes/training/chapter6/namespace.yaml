@@ -1,0 +1,4 @@
+apiVersion: v1 # 使用するAPIのバージョン
+kind: Namespace # 総合課題用の論理的分離
+metadata: # オブジェクトを一意に特定するための情報
+  name: capstone-training # このネームスペースに関連マニフェストをまとめる

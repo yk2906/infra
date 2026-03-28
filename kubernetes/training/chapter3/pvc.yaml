@@ -1,0 +1,12 @@
+apiVersion: v1 # 使用するAPIのバージョン
+kind: PersistentVolumeClaim # ストレージの利用要求（ProvisionerがPVを束ねる）
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-data-pvc # PVC名
+spec: # 要求内容
+  accessModes: # アクセスモード（ReadWriteOnceが一般的）
+    - ReadWriteOnce
+  resources: # 要求する容量
+    requests:
+      storage: 1Gi
+  # storageClassName: 環境の StorageClass に合わせてコメントアウトを外す
+  # 例: local-path (k3s), standard (GKE), gp3 (EKS) など

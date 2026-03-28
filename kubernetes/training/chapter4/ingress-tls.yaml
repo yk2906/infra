@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1 # Ingress API
+kind: Ingress # TLS 終端の例（証明書は Secret に格納）
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-demo-ingress-tls # TLS付きIngress名
+spec: # NOTES.md の手順で tls-demo-secret を作成してから適用する
+  ingressClassName: nginx # 環境に合わせて変更
+  tls: # ホスト名と Secret の対応
+  - hosts:
+    - demo.local # 証明書のCN/SANと一致させる
+    secretName: tls-demo-secret # type: kubernetes.io/tls
+  rules:
+  - host: demo.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: study-frontend-svc
+            port:
+              number: 80

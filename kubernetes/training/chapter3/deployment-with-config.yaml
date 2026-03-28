@@ -1,0 +1,43 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # ConfigMapとSecretを参照する例
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-app-with-config # Deployment名
+spec: # オブジェクトの望ましい状態
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-config-app
+  template:
+    metadata:
+      labels:
+        app: demo-config-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:alpine
+        env: # Secretを環境変数として注入
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: study-db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: study-db-secret
+              key: password
+        - name: APP_ENV
+          valueFrom: # ConfigMapのキーを環境変数に
+            configMapKeyRef:
+              name: study-app-config
+              key: APP_ENV
+        volumeMounts: # ConfigMapをファイルとしてマウント
+        - name: config-volume
+          mountPath: /etc/config
+          readOnly: true
+        ports:
+        - containerPort: 80
+      volumes:
+      - name: config-volume
+        configMap:
+          name: study-app-config # greeting.txt が /etc/config/greeting.txt になる

@@ -1,0 +1,20 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # API 層のプレースホルダ
+metadata: # オブジェクトを一意に特定するための情報
+  name: capstone-api
+  namespace: capstone-training
+spec: # TODO: Secret を envFrom や volume で参照、PVC マウントなどを追加
+  replicas: 1
+  selector:
+    matchLabels:
+      app: capstone-api
+  template:
+    metadata:
+      labels:
+        app: capstone-api
+    spec:
+      containers:
+      - name: api
+        image: nginx:alpine # 演習で API サーバーイメージに差し替え可
+        ports:
+        - containerPort: 80

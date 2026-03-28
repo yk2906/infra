@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1 # RBAC API
+kind: RoleBinding # Role と主体（User/Group/ServiceAccount）を結び付ける
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-pod-reader-binding # RoleBinding名
+  namespace: default
+subjects: # 権限を付与する主体
+- kind: ServiceAccount
+  name: study-viewer # serviceaccount-viewer と一致
+  namespace: default
+roleRef: # バインドするRole
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: study-pod-reader

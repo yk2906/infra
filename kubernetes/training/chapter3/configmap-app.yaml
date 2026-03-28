@@ -1,0 +1,8 @@
+apiVersion: v1 # 使用するAPIのバージョン
+kind: ConfigMap # 非機密の設定データをPodに渡す
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-app-config # ConfigMap名
+data: # キー・値のペア（文字列）
+  APP_ENV: "training" # 環境名の例
+  greeting.txt: | # ファイルとしてマウントする例用の複数行
+    hello from ConfigMap

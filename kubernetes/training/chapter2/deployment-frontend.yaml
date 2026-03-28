@@ -1,0 +1,19 @@
+apiVersion: apps/v1 # 使用するAPIのバージョン
+kind: Deployment # 使用するリソースの種類
+metadata: # オブジェクトを一意に特定するための情報
+  name: study-frontend # フロント用Deploymentの名前
+spec: # オブジェクトの望ましい状態
+  replicas: 2 # Podの数
+  selector: # このDeploymentが管理するPodのラベル
+    matchLabels:
+      app: demo-frontend # フロント用ラベル
+  template: # 作成するPodのテンプレート
+    metadata:
+      labels:
+        app: demo-frontend # selector.matchLabelsと一致させる
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine # 軽量イメージ
+        ports:
+        - containerPort: 80 # コンテナが待ち受けるポート
