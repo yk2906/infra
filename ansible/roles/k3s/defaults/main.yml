@@ -1,0 +1,20 @@
+---
+# k3s role の既定値（install-k3s.yml / setup-k3s-environment.yml から -e で上書き可）
+k3s_node_role: server
+# 例: v1.31.5+k3s1。空のままなら最新チャンネル
+k3s_version: ""
+# 例: "--disable traefik" や "--write-kubeconfig-mode 644"（server のみ）
+k3s_server_exec: ""
+# agent のみ必須
+k3s_url: ""
+k3s_token: ""
+# server で kubeconfig を配置するユーザー（空ならコピーしない）
+k3s_kubeconfig_user: k8s
+# リモートから kubectl する場合など、kubeconfig 内の API を差し替える（例: サーバーのグローバル IP）
+k3s_public_api: ""
+# server で、インストール前に API ポートが LISTEN していないか確認する
+k3s_check_apiserver_port: true
+# k3s_server_exec に --https-listen-port を指定した場合は同じ番号にする
+k3s_apiserver_port: 6443
+# server で、k3s 未稼働時のみ Docker を止めてからインストール
+k3s_stop_docker_before: false

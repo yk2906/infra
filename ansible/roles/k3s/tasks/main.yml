@@ -1,0 +1,132 @@
+---
+- name: k3s_node_role の妥当性を確認する
+  ansible.builtin.assert:
+    that:
+      - k3s_node_role in ['server', 'agent']
+    fail_msg: "k3s_node_role は server または agent を指定してください。"
+
+- name: agent 向け変数を確認する
+  ansible.builtin.assert:
+    that:
+      - k3s_url | length > 0
+      - k3s_token | length > 0
+    fail_msg: "agent の場合は k3s_url と k3s_token を指定してください。"
+  when: k3s_node_role == 'agent'
+
+- name: 前提パッケージ（curl）を入れる
+  ansible.builtin.apt:
+    name: curl
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: k3s server が稼働中か確認する
+  ansible.builtin.command: systemctl is-active k3s
+  register: k3s_server_active
+  failed_when: false
+  changed_when: false
+  when: k3s_node_role == 'server'
+
+- name: k3s agent が稼働中か確認する
+  ansible.builtin.command: systemctl is-active k3s-agent
+  register: k3s_agent_active
+  failed_when: false
+  changed_when: false
+  when: k3s_node_role == 'agent'
+
+- name: インストール前に API 用ポートが空いているか確認する
+  ansible.builtin.shell: |
+    set -euo pipefail
+    if ss -tln 2>/dev/null | grep -qE ':{{ k3s_apiserver_port }}[[:space:]]'; then
+      echo 'ポート {{ k3s_apiserver_port }} が使用中です。kind / 既存の Kubernetes / 以前の k3s を停止するか、k3s_server_exec に --https-listen-port <別番号> を指定し、k3s_apiserver_port も合わせてください。'
+      ss -tlnp 2>/dev/null | grep '{{ k3s_apiserver_port }}' || ss -tln | grep '{{ k3s_apiserver_port }}' || true
+      exit 1
+    fi
+  args:
+    executable: /bin/bash
+  register: k3s_port_check
+  changed_when: false
+  when:
+    - k3s_node_role == 'server'
+    - k3s_check_apiserver_port | default(true)
+    - k3s_server_active.stdout | default('') != 'active'
+
+- name: k3s 導入前に Docker を止める（オプション）
+  ansible.builtin.systemd:
+    name: docker
+    state: stopped
+  when:
+    - k3s_node_role == 'server'
+    - k3s_stop_docker_before | default(false)
+    - k3s_server_active.stdout | default('') != 'active'
+
+- name: k3s server をインストールする
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {% if k3s_version | default('') | length > 0 %}
+    export INSTALL_K3S_VERSION="{{ k3s_version }}"
+    {% endif %}
+    {% if k3s_server_exec | default('') | length > 0 %}
+    export INSTALL_K3S_EXEC="{{ k3s_server_exec }}"
+    {% endif %}
+    curl -sfL https://get.k3s.io | sh -
+  args:
+    executable: /bin/bash
+  when:
+    - k3s_node_role == 'server'
+    - k3s_server_active.stdout | default('') != 'active'
+
+- name: k3s agent をインストールする
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {% if k3s_version | default('') | length > 0 %}
+    export INSTALL_K3S_VERSION="{{ k3s_version }}"
+    {% endif %}
+    export K3S_URL="{{ k3s_url }}"
+    export K3S_TOKEN="{{ k3s_token }}"
+    curl -sfL https://get.k3s.io | sh -
+  args:
+    executable: /bin/bash
+  when:
+    - k3s_node_role == 'agent'
+    - k3s_agent_active.stdout | default('') != 'active'
+  no_log: true
+
+- name: k3s サービスを有効化して起動する
+  ansible.builtin.systemd:
+    name: "{{ 'k3s-agent' if k3s_node_role == 'agent' else 'k3s' }}"
+    state: started
+    enabled: true
+
+- name: kubeconfig 用ディレクトリを用意する
+  ansible.builtin.file:
+    path: "/home/{{ k3s_kubeconfig_user }}/.kube"
+    state: directory
+    owner: "{{ k3s_kubeconfig_user }}"
+    group: "{{ k3s_kubeconfig_user }}"
+    mode: "0700"
+  when:
+    - k3s_node_role == 'server'
+    - k3s_kubeconfig_user | default('') | length > 0
+
+- name: k3s の kubeconfig をユーザーへコピーする
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "/home/{{ k3s_kubeconfig_user }}/.kube/config"
+    owner: "{{ k3s_kubeconfig_user }}"
+    group: "{{ k3s_kubeconfig_user }}"
+    mode: "0600"
+    remote_src: true
+  when:
+    - k3s_node_role == 'server'
+    - k3s_kubeconfig_user | default('') | length > 0
+
+- name: kubeconfig の API サーバー表記を公開アドレスに置換する
+  ansible.builtin.replace:
+    path: "/home/{{ k3s_kubeconfig_user }}/.kube/config"
+    regexp: 'https://127\.0\.0\.1:6443'
+    replace: "https://{{ k3s_public_api }}:6443"
+  when:
+    - k3s_node_role == 'server'
+    - k3s_kubeconfig_user | default('') | length > 0
+    - k3s_public_api | default('') | length > 0

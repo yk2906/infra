@@ -1,12 +1,10 @@
+---
 - name: Install kubectx
   hosts: all
   connection: local
-  become: yes
+  become: true
   vars:
     version: "v0.9.5"
-  tasks:
-    - name: Download kubectx binary
-      get_url:
-        url: "https://raw.githubusercontent.com/ahmetb/kubectx/{{ version }}/kubectx"
-        dest: "/usr/local/bin/kubectx"
-        mode: '0755'
+    kubectx_project_version: "{{ version }}"
+  roles:
+    - role: kubectx

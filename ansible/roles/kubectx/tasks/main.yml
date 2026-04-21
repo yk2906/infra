@@ -1,0 +1,6 @@
+---
+- name: Download kubectx binary
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/ahmetb/kubectx/{{ kubectx_project_version }}/kubectx"
+    dest: "/usr/local/bin/kubectx"
+    mode: "0755"

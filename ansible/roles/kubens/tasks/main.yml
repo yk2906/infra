@@ -1,0 +1,6 @@
+---
+- name: Download kubens binary
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/ahmetb/kubectx/{{ kubectx_project_version }}/kubens"
+    dest: "/usr/local/bin/kubens"
+    mode: "0755"

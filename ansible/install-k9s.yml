@@ -1,50 +1,14 @@
+---
+# 制御マシン（localhost）に k9s を導入する playbook
+# 既定値・上書き例は roles/k9s/defaults/main.yml を参照。
 - name: Install k9s
   hosts: localhost
   connection: local
-  become: yes
+  become: true
   vars:
-    k9s_version: "v0.32.4"  # 2026年現在の安定版を指定
+    k9s_version: "v0.32.4"
     install_path: "/usr/local/bin"
-
-  tasks:
-    - name: Get system architecture
-      set_fact:
-        arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-
-    - name: Create temporary directory for download
-      tempfile:
-        state: directory
-        suffix: k9s_install
-      register: temp_dir
-
-    - name: Download k9s binary tarball
-      get_url:
-        url: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_{{ arch }}.tar.gz"
-        dest: "{{ temp_dir.path }}/k9s.tar.gz"
-
-    - name: Unarchive k9s binary
-      unarchive:
-        src: "{{ temp_dir.path }}/k9s.tar.gz"
-        dest: "{{ temp_dir.path }}"
-        remote_src: yes
-
-    - name: Install k9s to binary path
-      copy:
-        src: "{{ temp_dir.path }}/k9s"
-        dest: "{{ install_path }}/k9s"
-        mode: '0755'
-        remote_src: yes
-
-    - name: Remove temporary directory
-      file:
-        path: "{{ temp_dir.path }}"
-        state: absent
-
-    - name: Verify k9s installation
-      command: k9s version
-      register: k9s_check
-      changed_when: false
-
-    - name: Show k9s version
-      debug:
-        msg: "k9s has been installed: {{ k9s_check.stdout_lines[0] }}"
+    # 後方互換: 従来の install_path を k9s_install_path に渡す
+    k9s_install_path: "{{ install_path }}"
+  roles:
+    - role: k9s
