@@ -2,13 +2,13 @@
 # k3s ノードへのインストールと、制御マシン（実行したホスト）への CLI 導入をまとめた playbook
 #
 # 1 play 目: inventory の対象ホストへ k3s（roles/k3s）
-# 2 play 目: ansible を実行しているマシン（localhost）へ k9s / kubens / kubectx
+# 2 play 目: ansible を実行しているマシン（localhost）へ kubectl / k9s / kubens / kubectx
 #
 # 例:
 #   ansible-playbook -i inventory setup-k3s-environment.yml -u ansible --private-key ~/.ssh/key
 #
 # k3s だけ:  ansible-playbook ... --tags k3s
-# CLI だけ: ansible-playbook ... --tags k9s,kubectx_tools
+# CLI だけ: ansible-playbook ... --tags kubectl,k9s,kubectx_tools
 #
 - name: Install k3s on target hosts
   hosts: all
@@ -27,7 +27,11 @@
     k9s_install_path: "{{ install_path }}"
     version: "v0.9.5"
     kubectx_project_version: "{{ version }}"
+    kubectl_version: "v1.32.0"
+    kubectl_install_path: "/usr/local/bin/kubectl"
   roles:
+    - role: kubectl
+      tags: kubectl
     - role: k9s
       tags: k9s
     - role: kubens

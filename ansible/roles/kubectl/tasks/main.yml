@@ -1,0 +1,19 @@
+---
+- name: Set architecture for kubectl binary
+  ansible.builtin.set_fact:
+    kubectl_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Download kubectl binary
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/{{ kubectl_arch }}/kubectl"
+    dest: "{{ kubectl_install_path }}"
+    mode: "0755"
+
+- name: Verify kubectl client version
+  ansible.builtin.command: "{{ kubectl_install_path }} version --client"
+  register: kubectl_version_check
+  changed_when: false
+
+- name: Show kubectl version
+  ansible.builtin.debug:
+    msg: "{{ kubectl_version_check.stdout_lines | default([kubectl_version_check.stdout]) }}"

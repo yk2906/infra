@@ -1,0 +1,8 @@
+---
+# kubectl（公式バイナリ）を対象ホストに導入する playbook
+# 既定値は roles/kubectl/defaults/main.yml を参照。
+- name: Install kubectl
+  hosts: all
+  become: true
+  roles:
+    - role: kubectl

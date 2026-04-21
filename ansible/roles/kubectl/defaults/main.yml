@@ -1,0 +1,4 @@
+---
+# 例: v1.32.0。Kubernetes リリースタグに合わせる（先頭の v を含む）
+kubectl_version: "v1.32.0"
+kubectl_install_path: "/usr/local/bin/kubectl"
