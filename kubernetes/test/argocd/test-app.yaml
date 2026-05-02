@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-workloads
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/yk2906/infra.git
+    targetRevision: HEAD
+    path: kubernetes/test
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
