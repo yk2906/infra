@@ -22,5 +22,5 @@ spec:
     spec:
       containers:
       - name: ubuntu-container
-        image: ubuntu:24.04
+        image: ubuntu:26.04
         command: ["/bin/bash", "-c", "sleep infinity"]
