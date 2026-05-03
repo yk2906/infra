@@ -19,7 +19,7 @@ variable "aws_secret_key" {
 variable "aws_ami" {
   description = "ubuntu 24.04 LTS AMI ID."
   type        = string
-  default = "ami-054400ced365b82a0"
+  default     = "ami-054400ced365b82a0"
 }
 
 variable "aws_instance_type" {
