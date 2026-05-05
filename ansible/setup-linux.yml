@@ -1,25 +1,62 @@
 ---
-- name: Create dedicated users for Ansible and K8s
+- name: Create dedicated users and Setup repositories (GH CLI Latest Edition)
   hosts: all
   become: true
   vars:
-    # 登録したいあなたの公開鍵のパス
     public_key_path: "~/.ssh/oci_terraform_key.pub"
 
   tasks:
-    # 1. ansible ユーザーの作成
-    - name: Create ansible user
-      user:
-        name: ansible
-        shell: /bin/bash
-        groups: sudo
-        append: yes
+    # 1. バックグラウンドプロセスの解除 (ロック対策)
+    - name: Kill any running apt/dpkg processes to release lock
+      shell: |
+        killall apt apt-get dpkg 2>/dev/null || true
+        rm -f /var/lib/apt/lists/lock
+        rm -f /var/cache/apt/archives/lock
+        rm -f /var/lib/dpkg/lock*
+      args:
+        executable: /bin/bash
 
-    - name: Set up authorized_key for ansible
+    # 2. 既存の混乱の元を削除 (GitHub CLI 用の古いソースもあれば削除)
+    - name: Remove all conflicting apt source files
+      file:
+        path: "/etc/apt/sources.list.d/{{ item }}"
+        state: absent
+      loop:
+        - google-chrome.list
+        - google-chrome.sources
+        - cursor.list
+        - cursor.sources
+        - github-cli.list
+
+    # 3. GitHub CLI 用の公式 GPG 鍵をダウンロード
+    - name: Download GitHub CLI GPG key
+      shell: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/githubcli-archive-keyring.gpg
+
+    - name: Set permission for GitHub CLI key
+      file:
+        path: /usr/share/keyrings/githubcli-archive-keyring.gpg
+        mode: '0644'
+
+    # 4. ユーザー作成タスク (ansible / k8s)
+    - name: Create users and set up SSH keys
+      user:
+        name: "{{ item }}"
+        shell: /bin/bash
+      loop:
+        - ansible
+        - k8s
+
+    - name: Set up authorized_key
       authorized_key:
-        user: ansible
+        user: "{{ item }}"
         state: present
         key: "{{ lookup('file', public_key_path) }}"
+      loop:
+        - ansible
+        - k8s
 
     - name: Allow passwordless sudo for ansible
       copy:
@@ -27,32 +64,31 @@
         dest: /etc/sudoers.d/ansible
         mode: '0440'
 
-    # 2. k8s ユーザーの作成
-    - name: Create k8s user
-      user:
-        name: k8s
-        shell: /bin/bash
+    # 5. リポジトリ設定 (GH CLI は signed-by を使用、他は trusted=yes)
+    - name: Configure repositories
+      copy:
+        dest: "/etc/apt/sources.list.d/{{ item.name }}.list"
+        content: "{{ item.content }}"
+      loop:
+        - { name: 'github-cli', content: 'deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main' }
+        - { name: 'cursor', content: 'deb [arch=amd64 trusted=yes] https://downloads.cursor.com/aptrepo stable InRelease' }
+        - { name: 'google-chrome', content: 'deb [arch=amd64 trusted=yes] https://dl.google.com/linux/chrome/deb/ stable main' }
 
-    - name: Set up authorized_key for k8s
-      authorized_key:
-        user: k8s
-        state: present
-        key: "{{ lookup('file', public_key_path) }}"
+    # 6. apt キャッシュ更新
+    - name: Update apt cache via shell
+      shell: apt-get update
+      register: apt_update_output
+      changed_when: "'Reading package lists... Done' in apt_update_output.stdout"
 
-    # Dockerグループは、Dockerインストール後に紐付ける必要があるため
-    # ここではユーザー作成までにとどめます
-
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
-    - name: Install common utilities
+    # 7. 共通ツールのインストール (gh を追加し、state: latest を指定)
+    - name: Install common utilities including latest gh
       apt:
         name:
           - vim
           - net-tools
           - less
-          - curl     # ついでに入れておくと便利
-          - bash-completion # kubectl補完に必須
-        state: present
+          - curl
+          - bash-completion
+          - gh  # GitHub CLI
+        state: latest # すでにインストール済みの場合でも最新版にアップグレードする
+        update_cache: no
