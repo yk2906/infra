@@ -4,3 +4,5 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - serviceaccount-workflow.yaml
+  - cronworkflow-steam-batch.yaml

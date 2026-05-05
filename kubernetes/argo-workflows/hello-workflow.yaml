@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: test-batch-
+spec:
+  serviceAccountName: argo-workflow
+  entrypoint: run-batch
+  templates:
+  - name: run-batch
+    container:
+      image: alpine:3.19
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          echo "=== テストバッチ開始 ==="
+          date
+          echo "環境変数 DEMO=$DEMO"
+          echo "=== 正常終了 ==="
+      env:
+        - name: DEMO
+          value: "hello-argo"

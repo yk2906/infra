@@ -1,0 +1,8 @@
+# Argo Workflows UI でKubernetes ServiceAccount トークン（Bearer）を貼れるようにする設定例。
+# 適用例:
+#   helm upgrade --install argo-workflows argo/argo-workflows -n argo -f kubernetes/argo-workflows/values-client-auth.yaml
+#
+# （既にインストール済みなら同名リリース名・同一 namespace で upgrade）
+server:
+  authModes:
+    - client

@@ -1,0 +1,38 @@
+# クラスターに Argo Workflows が入っていることが前提（CRD: workflows.argoproj.io）
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: steam-bot-steam-batch
+  labels:
+    app: steam-bot
+    component: batch
+spec:
+  schedule: "0 3 * * *"
+  timezone: Asia/Tokyo
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  workflowSpec:
+    serviceAccountName: steam-bot-workflow
+    entrypoint: steam-api-sync
+    templates:
+      - name: steam-api-sync
+        container:
+          image: steam-bot-image:latest
+          imagePullPolicy: Always
+          command: ["python", "/app/batch_sync.py"]
+          env:
+            - name: STEAM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: discord-token
+                  key: steam_key
+            - name: STEAM_ID
+              value: "76561199287630138"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

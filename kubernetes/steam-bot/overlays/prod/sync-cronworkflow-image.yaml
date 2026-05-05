@@ -1,0 +1,10 @@
+source:
+  kind: Deployment
+  name: steam-bot
+  fieldPath: spec.template.spec.containers.[name=bot-container].image
+targets:
+  - select:
+      kind: CronWorkflow
+      name: steam-bot-steam-batch
+    fieldPaths:
+      - spec.workflowSpec.templates.[name=steam-api-sync].container.image

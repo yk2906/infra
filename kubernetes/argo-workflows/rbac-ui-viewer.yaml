@@ -1,0 +1,38 @@
+# UI でワークフロー一覧・詳細だけ見る用（送信・削除はしない想定）。
+# Namespace は Argo Workflows が入っている namespace（例: argo）に合わせる。
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argo-workflows-ui-viewer
+  namespace: argo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-workflows-ui-viewer
+rules:
+  - apiGroups: ["argoproj.io"]
+    resources:
+      - workflows
+      - workflowtemplates
+      - cronworkflows
+      - workfloweventbindings
+      - clusterworkflowtemplates
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-workflows-ui-viewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-workflows-ui-viewer
+subjects:
+  - kind: ServiceAccount
+    name: argo-workflows-ui-viewer
+    namespace: argo
