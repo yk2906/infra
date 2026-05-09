@@ -34,7 +34,7 @@ kubectl apply -f kubernetes/argo-workflows/rbac-ui-viewer.yaml
 kubectl create token argo-workflows-ui-viewer -n argo --duration=24h
 ```
 
-出力される **JWT だけ** をコピーします（ログや共有に注意）。
+出力は **JWT そのもの**です。ログや共有に注意してください。
 
 ## C. UI へポートフォワード
 
@@ -47,22 +47,95 @@ kubectl -n argo port-forward svc/argo-workflows-server 2746:2746
 
 `argo-workflows-server` が無い場合は、表示された UI 向け Service 名に合わせてください。
 
-ブラウザで **https://localhost:2746/** を開きます（証明書警告は開発時は「続行」でよいことが多いです）。
+ブラウザの URL は **サーバの `--secure` に合わせる**必要があります。
+
+このリポジトリの `values-client-auth.yaml` は **`server.secure: true`**（HTTPS）を前提にしています。
+
+- **`https://localhost:2746/`** を開く（証明書は自己署名のため、ブラウザの警告から進む）
+- **`--secure=false`** にしている場合のみ **http://localhost:2746/**
+
+`--secure` は次で確認できます。
+
+```bash
+kubectl get deploy -n argo -l app.kubernetes.io/component=server \
+  -o jsonpath='{range .items[*].spec.template.spec.containers[*].args[*]}{@}{"\n"}{end}' | grep -E 'secure|auth-mode'
+```
 
 ## D. ログイン画面
 
 - **Single Sign-On の LOGIN**：組織で OAuth などをセットアップ済みならこちら。未構成なら使えません。
-- **Client Authentication**：上で発行したトークンをテキストボックスに貼り、**LOGIN**。
+- **Client Authentication**：**`Bearer `（末尾スペース含む）＋ JWT** を 1 行で貼り、**LOGIN**。
 
-## SSO だけが目立っている／トークンを貼っても進めないとき
+サーバ実装では、client モードのとき Cookie に格納される文字列が **`Bearer ` で始まる**必要があります（`Authorization: Bearer ...` と同じ形式）。**JWT だけ**を貼ると `token not valid` になることがあります。
 
-まず **`values-client-auth.yaml` を適用した upgrade** と、認証関連の現在値を確認します。
+貼り付けのコツ:
+
+- 形式は次のとおり（1 行・末尾改行なし）。  
+  `Bearer eyJhbGciOiJSUzI1NiIs...`  
+  `kubectl create token` の結果の**前に**、手で `Bearer ` を付けます（先頭にスペースが入らないようにする）。
+- **改行を入れない**（末尾 LF が混じると検証失敗しやすい）。
+
+## トークンを貼っても進まないとき（切り分け）
+
+### 1. Helm の「実際に効いている値」を確認する
+
+`helm get values` の **USER-SUPPLIED** は、Chart 既定（例: `server.secure`）が表示されません。マージ結果も含めて見るなら例えば次です。
 
 ```bash
-helm get values argo-workflows -n argo
+helm get values argo-workflows -n argo --all
 ```
 
-問題が続くときは、[Argo Workflows の Server の auth mode ドキュメント](https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/) を参照してください。
+続けて **`values-client-auth.yaml` を指して upgrade** し、server Pod が新しい args になったか確認してください。
+
+### 2. サーバ Pod が本当に `--auth-mode=client` になっているか
+
+`server.authModes` が反映されていない Pod が古いままだと、トークンで進みません。
+
+```bash
+kubectl get deploy -n argo -l app.kubernetes.io/component=server \
+  -o jsonpath='{range .items[*].spec.template.spec.containers[*].args[*]}{@}{"\n"}{end}' | grep auth-mode
+```
+
+ここに **`--auth-mode=client`** が無い場合は、Helm の対象リリース名・namespace を間違えているか、別チャートが UI を提供している可能性があります。
+
+### 3. curl でトークンが受理されるか（UI と別に検証）
+
+ポートフォワードした状態で、**`--secure=true` のときは https と `-k`（自己署名）**:
+
+```bash
+TOKEN=$(kubectl create token argo-workflows-ui-viewer -n argo --duration=1h)
+curl -sS -k -o /dev/null -w "HTTP %{http_code}\n" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  "https://127.0.0.1:2746/api/v1/info"
+```
+
+**Cookie で送る場合**は、値も **`Bearer ` 付き**にします（生 JWT のみだと 401 / `token not valid` になります）。
+
+```bash
+# printf で「Bearer 」と JWT をくっつけ、末尾改行なし
+TOKEN=$(kubectl create token argo-workflows-ui-viewer -n argo --duration=1h)
+curl -sS -k -w "\nHTTP %{http_code}\n" \
+  --cookie "authorization=Bearer ${TOKEN}" \
+  "https://127.0.0.1:2746/api/v1/userinfo"
+```
+
+`--secure=false` のときだけ URL を `http://127.0.0.1:2746` にし、`-k` は不要です。
+
+- **401 / Unauthenticated** → 認証モードとトークン種別の不一致、`http`/`https` の取り違え、トークン不正のどれかが多いです。
+- **200** → トークンは通っているので、**ブラウザで開いている URL（http/https）、キャッシュ、別タブの古いセッション**を疑ってください。
+
+### 4. サーバのログに「token not valid for running mode」
+
+[issue の議論](https://github.com/argoproj/argo-workflows/issues/5832) でも触れられているように、**サーバの `--auth-mode` と、渡している認証情報の種類が合っていない**と出やすいです。上記の **実 Pod の args** を優先して確認してください。
+
+```bash
+kubectl logs -n argo -l app.kubernetes.io/component=server --tail=80
+```
+
+### 5. 参考リンク
+
+- [Argo Server auth mode](https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/)
+- [Access token（ServiceAccount 前提の流れ）](https://argo-workflows.readthedocs.io/en/stable/access-token/)
 
 ## ワークフローを「操作」までしたい場合
 

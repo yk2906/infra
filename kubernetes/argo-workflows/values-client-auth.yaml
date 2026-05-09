@@ -3,6 +3,13 @@
 #   helm upgrade --install argo-workflows argo/argo-workflows -n argo -f kubernetes/argo-workflows/values-client-auth.yaml
 #
 # （既にインストール済みなら同名リリース名・同一 namespace で upgrade）
+#
+# authMode（単数・非推奨）と authModes を併用すると、Helm が両方の --auth-mode を出して
+# 意図と違う認証になることがあるため、authMode は空で明示する。
 server:
+  authMode: ""
   authModes:
     - client
+  # false のときは HTTP（readiness も HTTP）。ブラウザは http://。
+  # true のときは HTTPS（多くは自己署名）。Secure 付き Cookie と相性がよく UI ログインに向く。
+  secure: true
