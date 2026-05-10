@@ -1,0 +1,68 @@
+# Slack の会話から最新テキスト 1 件を Notion ページへ引用追記する（work/app/test/main.py）。
+#
+# 事前準備:
+#   - Namespace argo に ServiceAccount argo-workflow
+#   - Secret argo-workflows-slack-notion（GitOps では SOPS の `secret-slack-notion-sync-workflow.sops.yaml` 等／手順は kubernetes/gitops/secrets-gitops.md）
+#   - コンテナイメージをレジストリに push 済み（GHCR なら app の GitHub Actions で test/** の push 時にビルド）
+#
+# イメージ差し替え例:
+#   argo submit slack-notion-sync-workflow.yaml -n argo -p slack-notion-image=ghcr.io/OWNER/slack-notion-sync:latest
+#
+# 実行例:
+#   kubectl create -f slack-notion-sync-workflow.yaml -n argo
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: slack-notion-sync-
+  labels:
+    app.kubernetes.io/name: slack-notion-sync
+spec:
+  serviceAccountName: argo-workflow
+  arguments:
+    parameters:
+      - name: slack-notion-image
+        value: ghcr.io/yk2906/slack-notion-sync:latest
+      - name: slack-debug
+        value: ""
+  entrypoint: main
+  templates:
+    - name: main
+      container:
+        image: "{{workflow.parameters.slack-notion-image}}"
+        env:
+          - name: SLACK_BOT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: slack_bot_token
+                optional: true
+          - name: SLACK_USER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: slack_user_token
+                optional: true
+          - name: MY_DM_CHANNEL_ID
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: my_dm_channel_id
+                optional: true
+          - name: SLACK_USER_ID
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: slack_user_id
+                optional: true
+          - name: NOTION_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: notion_token
+          - name: NOTION_PAGE_ID
+            valueFrom:
+              secretKeyRef:
+                name: argo-workflows-slack-notion
+                key: notion_page_id
+          - name: SLACK_DEBUG
+            value: "{{workflow.parameters.slack-debug}}"

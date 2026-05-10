@@ -1,0 +1,14 @@
+---
+# 制御マシン（localhost）に Mozilla SOPS を導入する playbook（GitHub Releases の Linux バイナリ）。
+# age は別パッケージ／別 playbook が必要です（distro のパッケージまたは公式バイナリ）。
+#
+#   cd ansible
+#   ansible-playbook install-sops.yml
+#
+# 既定値・上書き例は roles/sops/defaults/main.yml を参照。
+- name: Install SOPS
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - role: sops

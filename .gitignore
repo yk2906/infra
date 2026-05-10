@@ -1,3 +1,13 @@
 **/.terraform/**
 terraform.tfstate*
 **/secret.tfvars/**
+
+# Incoming Webhook を差し込んだローカルファイル（コミットしない）
+kubernetes/argo-workflows/secret-notify-webhooks*.local.yaml
+
+# Slack/Notion 等・平文 Secret のローカル編集用（GitOps では SealedSecret / SOPS 側のみコミット）
+kubernetes/argo-workflows/secret-slack-notion-sync-workflow.local.yaml
+
+# age（SOPS 用）の秘密鍵はコミットしない
+*.agekey
+**/age.key

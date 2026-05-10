@@ -1,0 +1,24 @@
+---
+- name: Map CPU architecture to SOPS release suffix
+  ansible.builtin.set_fact:
+    sops_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ('arm64' if ansible_architecture in ['aarch64', 'arm64'] else ansible_architecture) }}"
+
+- name: Fail on unsupported Linux architecture for SOPS binary
+  ansible.builtin.fail:
+    msg: "この playbook がダウンロードするのは linux amd64/arm64 のみです（現在: {{ ansible_architecture }}）。"
+  when: sops_arch not in ['amd64', 'arm64']
+
+- name: Download SOPS binary from GitHub releases
+  ansible.builtin.get_url:
+    url: "https://github.com/getsops/sops/releases/download/{{ sops_version }}/sops-{{ sops_version }}.linux.{{ sops_arch }}"
+    dest: "{{ sops_install_path }}/sops"
+    mode: "0755"
+
+- name: Verify SOPS installation
+  ansible.builtin.command: "{{ sops_install_path }}/sops --version"
+  register: sops_check
+  changed_when: false
+
+- name: Show SOPS version
+  ansible.builtin.debug:
+    msg: "{{ sops_check.stdout_lines | default([sops_check.stderr]) }}"

@@ -4,8 +4,16 @@
 #
 # （既にインストール済みなら同名リリース名・同一 namespace で upgrade）
 #
+# ワークフロー Pod が使う SA（既定名 argo-workflow）。create:false のときは手動作成が必要で
+# kubectl create で Workflow を叩く際に 「serviceaccount not found」になりやすい。
+#
 # authMode（単数・非推奨）と authModes を併用すると、Helm が両方の --auth-mode を出して
 # 意図と違う認証になることがあるため、authMode は空で明示する。
+workflow:
+  serviceAccount:
+    create: true
+    name: argo-workflow
+
 server:
   authMode: ""
   authModes:

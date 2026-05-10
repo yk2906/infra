@@ -137,6 +137,33 @@ kubectl logs -n argo -l app.kubernetes.io/component=server --tail=80
 - [Argo Server auth mode](https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/)
 - [Access token（ServiceAccount 前提の流れ）](https://argo-workflows.readthedocs.io/en/stable/access-token/)
 
+## 練習: 公開 API → Discord / Slack Incoming Webhook（app の実行スクリプト）
+
+処理は **`~/work/app/workflow-demo/fetch_and_notify.py`** にあり、コンテナビルド用は同ディレクトリの `Dockerfile`。CI で **GHCR** に push する場合は app リポジトリの `.github/workflows/workflow-demo.yaml`（`workflow-demo/**` 変更時）を利用する。
+
+1. **Secret**（Webhook URL。コミットしない）
+
+```bash
+cp kubernetes/argo-workflows/secret-notify-webhooks.example.yaml kubernetes/argo-workflows/secret-notify-webhooks.local.yaml
+# 編集後
+kubectl apply -f kubernetes/argo-workflows/secret-notify-webhooks.local.yaml
+```
+
+2. **イメージ**  
+   `demo-api-notify-workflow.yaml` のパラメータ **`workflow-demo-image`**（既定 `ghcr.io/yk2906/workflow-demo:latest`）を、自分のレジストリ／タグに合わせる。初回は app を push するか手元で `docker build` + `docker push` してイメージを用意する。
+
+3. **Workflow 実行**（`serviceAccountName: argo-workflow` 前提）
+
+```bash
+kubectl create -f kubernetes/argo-workflows/demo-api-notify-workflow.yaml -n argo
+```
+
+Slack に送る場合はマニフェストの `provider` を `slack` にするか、`argo submit ... -p provider=slack`。イメージだけ差し替えるなら `argo submit ... -p workflow-demo-image=...`。
+
+既定の `api-url` は **`https://httpbin.org/get`**。遮断される場合は `api-url` を変更する。
+
+最小の単一ステップ例は `hello-workflow.yaml` です。
+
 ## ワークフローを「操作」までしたい場合
 
 `verbs` に `create` / `update` / `delete` が必要になります。閲覧専用の `rbac-ui-viewer.yaml` は意図的に絞っているため、その場合は別ロール設計または一時的に権限広めの環境のみで運用することを検討してください。

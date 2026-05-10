@@ -1,0 +1,14 @@
+# このファイルを同じディレクトリに `.sops.yaml` としてコピーし、`REPLACE_WITH_YOUR_age1_PUBLIC_KEY`
+# をあなたの age 公開鍵に差し替えてください（公開鍵のみ Git にコミットして問題ありません）。
+#
+#   cp kubernetes/argo-workflows/.sops.yaml.example kubernetes/argo-workflows/.sops.yaml
+#
+# 公開鍵の取得例:
+#   age-keygen -o ~/.config/sops/age/keys.txt
+#   age-keygen -y ~/.config/sops/age/keys.txt
+#
+# 複数人で復号したい場合は `age:` に複数の公開鍵を続けて書けます（公式ドキュメント参照）。
+creation_rules:
+  - path_regex: .*secret-slack-notion-sync-workflow\.sops\.yaml$
+    encrypted_regex: ^(stringData|data)$
+    age: REPLACE_WITH_YOUR_age1_PUBLIC_KEY
