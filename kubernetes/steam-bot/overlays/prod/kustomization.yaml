@@ -15,4 +15,4 @@ replacements:
 images:
 - name: steam-bot-image
   newName: ghcr.io/yk2906/steam-bot
-  newTag: 773bbb548fb31455694f5f3611a0f09811fbcb45
+  newTag: ed57ac74d18d0d6fff1e4893de080c7840959892
