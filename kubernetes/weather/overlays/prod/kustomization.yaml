@@ -4,12 +4,12 @@ kind: Kustomization
 namespace: weather
 
 resources:
-  - ../../base
+- ../../base
 
 replacements:
-  - path: sync-cronworkflow-image.yaml
+- path: sync-cronworkflow-image.yaml
 
 images:
-  - name: weather-image
-    newName: ghcr.io/yk2906/weather
-    newTag: latest
+- name: weather-image
+  newName: ghcr.io/yk2906/weather
+  newTag: 6e5d98cad1d58e6e03c8f4880afb60d118e2c908
