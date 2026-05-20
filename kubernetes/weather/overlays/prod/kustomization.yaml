@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: weather
+
+resources:
+  - ../../base
+
+replacements:
+  - path: sync-cronworkflow-image.yaml
+
+images:
+  - name: weather-image
+    newName: ghcr.io/yk2906/weather
+    newTag: latest

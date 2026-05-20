@@ -1,0 +1,37 @@
+# クラスターに Argo Workflows が入っていることが前提（CRD: workflows.argoproj.io）
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: weather-tomorrow-forecast
+  labels:
+    app: weather
+    component: batch
+spec:
+  schedules:
+    - "0 6 * * *"
+  timezone: Asia/Tokyo
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  workflowSpec:
+    serviceAccountName: weather-workflow
+    entrypoint: fetch-tomorrow-weather
+    templates:
+      - name: fetch-tomorrow-weather
+        container:
+          image: weather-image:latest
+          imagePullPolicy: Always
+          env:
+            - name: LATITUDE
+              value: "35.6762"
+            - name: LONGITUDE
+              value: "139.6503"
+            - name: TIMEZONE
+              value: "Asia/Tokyo"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"

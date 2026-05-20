@@ -1,0 +1,10 @@
+source:
+  kind: Deployment
+  name: weather
+  fieldPath: spec.template.spec.containers.[name=weather-container].image
+targets:
+  - select:
+      kind: CronWorkflow
+      name: weather-tomorrow-forecast
+    fieldPaths:
+      - spec.workflowSpec.templates.[name=fetch-tomorrow-weather].container.image
