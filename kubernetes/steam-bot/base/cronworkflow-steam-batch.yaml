@@ -30,6 +30,11 @@ spec:
                   key: steam_key
             - name: STEAM_ID
               value: "76561199287630138"
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: discord-token
+                  key: github_token
           resources:
             requests:
               cpu: "100m"
