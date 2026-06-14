@@ -1,0 +1,14 @@
+# DNS-01チャレンジが正常に通るかを確認するためのテスト用Certificate。
+# 確認後はこのリソースとSecretは削除してよい。
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-argocd-tls
+  namespace: argocd
+spec:
+  secretName: test-argocd-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+    - argocd.mamelly.com

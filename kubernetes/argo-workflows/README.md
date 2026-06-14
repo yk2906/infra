@@ -1,5 +1,80 @@
 # Argo Workflows（UI で見るまで）
 
+## ブラウザでSSOログイン（推奨・現在の構成）
+
+`https://workflows.mamelly.com` にTailscale経由でアクセスし、Googleアカウントでログインできる。
+port-forwardやトークンのコピペは不要。
+
+### 前提
+
+- ArgoCD側のIngress + Dex(Google OAuth)が設定済みであること（`kubernetes/argocd/README.md`）。
+  Argo WorkflowsはArgoCDのDexを共通のOIDCプロバイダとして使う。
+- Tailscaleで `workflows.mamelly.com` （k3sノードのTailscale IP）に到達できること。
+- DNS: `infra/terraform/cloudflare/dns.tf` の `argo_workflows` レコード
+  （Tailscale IPを指す、`proxied = false`）。
+
+### Dex側の準備（argocd-cm / argocd-secret）
+
+`kubernetes/argocd/README.md` の「SSO (Dex + Google OAuth)」を参照。
+`argocd-cm`の`dex.config`に`staticClients`として以下を追加し、対応する
+シークレットを`argocd-secret`の`dex.argoWorkflows.clientSecret`に登録する。
+
+```yaml
+staticClients:
+  - id: argo-workflows
+    name: Argo Workflows
+    redirectURIs:
+      - https://workflows.mamelly.com/oauth2/callback
+    secret: $dex.argoWorkflows.clientSecret
+```
+
+### Argo Workflows側のSecret
+
+Dexに登録したクライアントシークレットと同じ値を、`argo` namespaceの`argo-server-sso`
+（Helmチャートのデフォルト名）に登録する。
+
+```bash
+kubectl create secret generic argo-server-sso -n argo \
+  --from-literal=client-id=argo-workflows \
+  --from-literal=client-secret="<dex.argoWorkflows.clientSecretと同じ値>"
+```
+
+### Helm values (`values-sso.yaml`)
+
+`values-client-auth.yaml`と併用する。
+
+```bash
+helm upgrade --install argo-workflows argo/argo-workflows -n argo \
+  -f kubernetes/argo-workflows/values-client-auth.yaml \
+  -f kubernetes/argo-workflows/values-sso.yaml
+```
+
+ポイント:
+- `server.secure: false` … IngressでTLS終端するため、serverはplain HTTPでlisten
+- `server.authModes: [sso, client]` … ブラウザのSSOログインと、下記Bのトークン認証を両方有効化
+- `server.sso.issuer: https://argocd.mamelly.com/api/dex` … ArgoCDのDexをOIDCプロバイダとして利用
+- `server.sso.rbac.enabled: false` … SSOは「認証」のみ。認可はargo-server自身のSA権限に従う
+  （Google OAuthクライアントが「テスト」モードのため、ログイン可能なのは登録済みテストユーザーのみ）
+
+### Ingress
+
+```bash
+kubectl apply -f kubernetes/argo-workflows/ingress.yaml
+```
+
+`workflows.mamelly.com` → `argo-workflows-server:2746`、TLSは`letsencrypt-prod` ClusterIssuerで発行。
+
+### 動作確認
+
+`https://workflows.mamelly.com` を開き、「LOGIN」→GoogleアカウントでSSOログインできることを確認。
+
+---
+
+## (CLI/ServiceAccountトークンでアクセスする場合)
+
+`argo submit`などCLIから操作する場合や、上記SSOを構成する前の確認用に、
+client認証（ServiceAccountトークンのコピペ）の手順を以下に残す。
+
 ブラウザで UI を見るときの流れは **(A) Helm で client 認証を有効化** → **(B) 閲覧用 ServiceAccount とトークン発行** → **(C) ポートフォワード** → **(D) 画面の「Client Authentication」にトークンを貼る** が一般的です。
 
 ## 前提

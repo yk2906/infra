@@ -1,0 +1,34 @@
+# Argo Workflows をブラウザから https://workflows.mamelly.com でSSOログインできるようにする設定。
+# values-client-auth.yaml と合わせて使う:
+#   helm upgrade --install argo-workflows argo/argo-workflows -n argo \
+#     -f kubernetes/argo-workflows/values-client-auth.yaml \
+#     -f kubernetes/argo-workflows/values-sso.yaml
+#
+# - secure: false … IngressでTLS終端するため、serverはplain HTTP(2746)でlisten
+# - authModes: [sso, client] … ブラウザはSSO、argo CLI/ServiceAccountトークンによるclient認証も維持
+# - sso.issuer … ArgoCDのDexをOIDCプロバイダとして利用（argocd-cmのstaticClientsに
+#   id: argo-workflows を追加済み。クライアントシークレットはargo-server-sso Secretに保存）
+# - sso.rbac.enabled: false … SSOログインは「認証」のみ。認可はargo-serverのSA権限に従う
+#   (Google OAuthクライアントが「テスト」モードのため、ログイン可能なのは登録済みテストユーザーのみ)
+server:
+  authMode: ""
+  authModes:
+    - sso
+    - client
+  secure: false
+  sso:
+    enabled: true
+    issuer: https://argocd.mamelly.com/api/dex
+    clientId:
+      name: argo-server-sso
+      key: client-id
+    clientSecret:
+      name: argo-server-sso
+      key: client-secret
+    redirectUrl: https://workflows.mamelly.com/oauth2/callback
+    scopes:
+      - groups
+      - email
+      - profile
+    rbac:
+      enabled: false

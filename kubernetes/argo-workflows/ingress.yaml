@@ -1,0 +1,27 @@
+# argo-workflows-server をブラウザから https://workflows.mamelly.com で参照するためのIngress。
+# values-sso.yaml の server.secure=false により argo-workflows-server は
+# plain HTTPで2746番をlistenしているため、IngressでTLS終端する。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo-workflows-server-ingress
+  namespace: argo
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - workflows.mamelly.com
+      secretName: argo-workflows-server-tls
+  rules:
+    - host: workflows.mamelly.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argo-workflows-server
+                port:
+                  number: 2746
