@@ -106,7 +106,13 @@ kubectl patch secret argocd-secret -n argocd --type merge \
 policy.default: ""
 policy.csv: |
   g, yk050696@gmail.com, role:admin
+scopes: '[groups, email]'
 ```
+
+> **`scopes`が必須の理由**: ArgoCD RBACはデフォルトで`groups`クレームのみを`g`行の
+> マッピング対象にする。GoogleのDexコネクタは`groups`クレームを返さないため、
+> `scopes`に`email`を追加しないと`g, <email>, role:admin`が一致せず、
+> ログインしても権限なし（Application一覧が空）になる。
 
 ### 5. 反映
 
