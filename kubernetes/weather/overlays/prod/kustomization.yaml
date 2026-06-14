@@ -12,4 +12,4 @@ replacements:
 images:
 - name: weather-image
   newName: ghcr.io/yk2906/weather
-  newTag: 6e5d98cad1d58e6e03c8f4880afb60d118e2c908
+  newTag: 96c4dbbd296409a1310591cf9cec44d40a16dabe
