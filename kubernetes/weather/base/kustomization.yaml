@@ -4,4 +4,6 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - serviceaccount-workflow.yaml
+  - role-workflow.yaml
+  - rolebinding-workflow.yaml
   - cronworkflow-weather-daily.yaml

@@ -1,4 +1,6 @@
 # クラスターに Argo Workflows が入っていることが前提（CRD: workflows.argoproj.io）
+# Discord 通知: namespace weather に Secret discord-token（token, channel_id）が必要。
+# steam-bot と同じ Bot トークン・チャンネル ID を使う（Secret は namespace ごとに配置）。
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
@@ -8,7 +10,7 @@ metadata:
     component: batch
 spec:
   schedules:
-    - "0 6 * * *"
+    - "0 19 * * *"
   timezone: Asia/Tokyo
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -28,6 +30,16 @@ spec:
               value: "139.6503"
             - name: TIMEZONE
               value: "Asia/Tokyo"
+            - name: DISCORD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: discord-token
+                  key: token
+            - name: DISCORD_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: discord-token
+                  key: channel_id
           resources:
             requests:
               cpu: "50m"
