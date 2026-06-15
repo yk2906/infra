@@ -6,9 +6,6 @@ namespace: steam-bot
 resources:
 - ../../base
 
-patches:
-- path: patch-service.yaml
-
 replacements:
 - path: sync-cronworkflow-image.yaml
 
