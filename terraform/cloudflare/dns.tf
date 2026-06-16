@@ -24,3 +24,12 @@ resource "cloudflare_record" "argo_workflows" {
   content = "100.86.157.73"
   zone_id = "f8d0ddf4c963e35e758c7d49b81f6fb4"
 }
+
+resource "cloudflare_record" "streamlit" {
+  name    = "streamlit"
+  proxied = false
+  ttl     = 1
+  type    = "CNAME"
+  content = "your-app-name.streamlit.app"
+  zone_id = "f8d0ddf4c963e35e758c7d49b81f6fb4"
+}
