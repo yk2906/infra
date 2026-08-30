@@ -4,6 +4,9 @@
   become: true
   vars:
     public_key_path: "~/.ssh/oci_terraform_key.pub"
+    managed_users:
+      - ansible
+      - k8s
 
   tasks:
     # 1. バックグラウンドプロセスの解除 (ロック対策)
@@ -45,18 +48,14 @@
       user:
         name: "{{ item }}"
         shell: /bin/bash
-      loop:
-        - ansible
-        - k8s
+      loop: "{{ managed_users }}"
 
     - name: Set up authorized_key
       authorized_key:
         user: "{{ item }}"
         state: present
         key: "{{ lookup('file', public_key_path) }}"
-      loop:
-        - ansible
-        - k8s
+      loop: "{{ managed_users }}"
 
     - name: Allow passwordless sudo for ansible
       copy:
@@ -74,13 +73,7 @@
         - { name: 'cursor', content: 'deb [arch=amd64 trusted=yes] https://downloads.cursor.com/aptrepo stable InRelease' }
         - { name: 'google-chrome', content: 'deb [arch=amd64 trusted=yes] https://dl.google.com/linux/chrome/deb/ stable main' }
 
-    # 6. apt キャッシュ更新
-    - name: Update apt cache via shell
-      shell: apt-get update
-      register: apt_update_output
-      changed_when: "'Reading package lists... Done' in apt_update_output.stdout"
-
-    # 7. 共通ツールのインストール (gh を追加し、state: latest を指定)
+    # 6. 共通ツールのインストール (gh を追加し、state: latest を指定。リポジトリ追加直後のため apt キャッシュも更新する)
     - name: Install common utilities including latest gh
       apt:
         name:
@@ -91,4 +84,4 @@
           - bash-completion
           - gh  # GitHub CLI
         state: latest # すでにインストール済みの場合でも最新版にアップグレードする
-        update_cache: no
+        update_cache: true
