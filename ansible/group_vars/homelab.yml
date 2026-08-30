@@ -1,0 +1,6 @@
+---
+# ホームラボ(自宅ミニPC)向け設定
+# 対象ホストは inventory の [homelab] グループに追加する
+
+ansible_user: ansible
+public_key_path: "~/.ssh/homelab_key.pub"
