@@ -1,0 +1,14 @@
+---
+# ホームラボ機（自宅ミニPC）向けのセットアップをまとめて実行する playbook
+# setup-linux.yml（ユーザー作成・共通リポジトリ設定）と
+# install-devtools.yml（開発ツール一式）を順に import する。
+# 個別に実行したい場合はそれぞれのファイルを直接指定する。
+#
+# 実行例（初回。既存ユーザー/鍵で接続し ansible/k8s ユーザーを作成）:
+#   ansible-playbook -i inventory setup-homelab.yml -l homelab -u <初期ログインユーザー> --private-key ~/.ssh/<初期ログイン鍵>
+#
+# 実行例（2回目以降。group_vars/homelab.yml の鍵で接続）:
+#   ansible-playbook -i inventory setup-homelab.yml -l homelab -u ansible
+#
+- import_playbook: setup-linux.yml
+- import_playbook: install-devtools.yml

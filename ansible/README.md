@@ -38,6 +38,7 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
 ├── install-kubectx.yml # kubectx（connection: local）
 ├── install-kubens.yml # kubens（connection: local）
 ├── install-devtools.yml # ホームラボ機向け開発ツール一式（jq/tmux/fzf等 + yq/cue/uv/kind/helm/Node.js/Claude Code CLI）
+├── setup-homelab.yml # setup-linux.yml + install-devtools.yml をまとめて import（ホームラボ機の初期セットアップ用）
 ├── group_vars/
 │   └── homelab.yml # homelab グループ（自宅ミニPC）専用の変数
 └── roles/
@@ -69,7 +70,7 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
 - **対象ホストに k3s を入れたうえで、このマシンに kubectl / k9s / kubectx / kubens も入れる:** `setup-k3s-environment.yml`（`--tags k3s` でクラスタ側のみ、`--tags kubectl,k9s,kubectx_tools` で CLI のみ、など）
 - **kubectl だけ入れる:** `install-kubectl.yml`（inventory の全ホスト。単一なら `-l` で限定）
 
-### ホームラボ機（自宅ミニPC）向け開発ツール一式
+### ホームラボ機（自宅ミニPC）向けセットアップ
 
 `install-devtools.yml` を `homelab` グループに対して実行すると、jq/tmux/fzf/ripgrep 等の共通CLIと、yq/cue/uv/kind/helm/Node.js/Claude Code CLI をまとめて導入できます。
 
@@ -78,6 +79,16 @@ ansible-playbook -i inventory install-devtools.yml -l homelab
 ```
 
 `--tags` で個別導入も可能です（例: `--tags helm,kind`）。対象ホストは `inventory` の `[homelab]` グループに追加し、接続に使う鍵・ユーザーは `group_vars/homelab.yml` で管理します。
+
+初期セットアップ（ユーザー作成・共通リポジトリ設定）から開発ツール導入までまとめて流したい場合は `setup-homelab.yml`（`setup-linux.yml` + `install-devtools.yml` を import）を使います。
+
+```bash
+# 初回（既存ユーザー/鍵で接続し ansible/k8s ユーザーを作成）
+ansible-playbook -i inventory setup-homelab.yml -l homelab -u <初期ログインユーザー> --private-key ~/.ssh/<初期ログイン鍵>
+
+# 2回目以降（group_vars/homelab.yml の鍵で接続）
+ansible-playbook -i inventory setup-homelab.yml -l homelab -u ansible
+```
 
 ## セットアップ手順（kind）
 
