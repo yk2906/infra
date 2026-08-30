@@ -37,6 +37,9 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
 ├── install-sops.yml # localhost に SOPS（getsops/sops の Linux バイナリ）
 ├── install-kubectx.yml # kubectx（connection: local）
 ├── install-kubens.yml # kubens（connection: local）
+├── install-devtools.yml # ホームラボ機向け開発ツール一式（jq/tmux/fzf等 + yq/cue/uv/kind/helm/Node.js/Claude Code CLI）
+├── group_vars/
+│   └── homelab.yml # homelab グループ（自宅ミニPC）専用の変数
 └── roles/
     ├── docker/
     ├── k3s/
@@ -45,7 +48,15 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
     ├── sops/
     ├── kubectx/
     ├── kubens/
-    └── user_k8s/
+    ├── user_k8s/
+    ├── dev_tools_apt/ # jq/tmux/make/lsof/socat/fzf/ripgrep/python3等
+    ├── yq/
+    ├── cue/
+    ├── uv/
+    ├── kind/
+    ├── helm/
+    ├── nodejs/
+    └── claude_code_cli/
 ```
 
 `setup-kind.yml` はロールではなくプレイ内タスクで Docker（`docker.io` パッケージ）を入れます。`roles/docker`（Docker CE リポジトリ）とは手順が異なります。
@@ -57,6 +68,16 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
 - **ノードに k3s だけ入れる:** `install-k3s.yml`（server / agent。詳細はファイル先頭のコメント）
 - **対象ホストに k3s を入れたうえで、このマシンに kubectl / k9s / kubectx / kubens も入れる:** `setup-k3s-environment.yml`（`--tags k3s` でクラスタ側のみ、`--tags kubectl,k9s,kubectx_tools` で CLI のみ、など）
 - **kubectl だけ入れる:** `install-kubectl.yml`（inventory の全ホスト。単一なら `-l` で限定）
+
+### ホームラボ機（自宅ミニPC）向け開発ツール一式
+
+`install-devtools.yml` を `homelab` グループに対して実行すると、jq/tmux/fzf/ripgrep 等の共通CLIと、yq/cue/uv/kind/helm/Node.js/Claude Code CLI をまとめて導入できます。
+
+```bash
+ansible-playbook -i inventory install-devtools.yml -l homelab
+```
+
+`--tags` で個別導入も可能です（例: `--tags helm,kind`）。対象ホストは `inventory` の `[homelab]` グループに追加し、接続に使う鍵・ユーザーは `group_vars/homelab.yml` で管理します。
 
 ## セットアップ手順（kind）
 

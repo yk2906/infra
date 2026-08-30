@@ -1,0 +1,19 @@
+---
+- name: Set architecture for yq binary
+  ansible.builtin.set_fact:
+    yq_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Download yq binary
+  ansible.builtin.get_url:
+    url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_{{ yq_arch }}"
+    dest: "{{ yq_install_path }}"
+    mode: "0755"
+
+- name: Verify yq installation
+  ansible.builtin.command: "{{ yq_install_path }} --version"
+  register: yq_check
+  changed_when: false
+
+- name: Show yq version
+  ansible.builtin.debug:
+    msg: "{{ yq_check.stdout }}"

@@ -1,0 +1,16 @@
+---
+- name: Install common dev CLI packages (apt)
+  ansible.builtin.apt:
+    name:
+      - jq
+      - tmux
+      - make
+      - lsof
+      - socat
+      - fzf
+      - ripgrep
+      - python3
+      - python3-venv
+      - bubblewrap
+    state: present
+    update_cache: true

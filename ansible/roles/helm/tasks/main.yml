@@ -1,0 +1,42 @@
+---
+- name: Set architecture for Helm binary
+  ansible.builtin.set_fact:
+    helm_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Create temporary directory for download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: helm_install
+  register: helm_temp_dir
+
+- name: Download Helm tarball
+  ansible.builtin.get_url:
+    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-{{ helm_arch }}.tar.gz"
+    dest: "{{ helm_temp_dir.path }}/helm.tar.gz"
+
+- name: Unarchive Helm tarball
+  ansible.builtin.unarchive:
+    src: "{{ helm_temp_dir.path }}/helm.tar.gz"
+    dest: "{{ helm_temp_dir.path }}"
+    remote_src: true
+
+- name: Install Helm to binary path
+  ansible.builtin.copy:
+    src: "{{ helm_temp_dir.path }}/linux-{{ helm_arch }}/helm"
+    dest: "{{ helm_install_path }}"
+    mode: "0755"
+    remote_src: true
+
+- name: Remove temporary directory
+  ansible.builtin.file:
+    path: "{{ helm_temp_dir.path }}"
+    state: absent
+
+- name: Verify Helm installation
+  ansible.builtin.command: "{{ helm_install_path }} version"
+  register: helm_check
+  changed_when: false
+
+- name: Show Helm version
+  ansible.builtin.debug:
+    msg: "{{ helm_check.stdout }}"

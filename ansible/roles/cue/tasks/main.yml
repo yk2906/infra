@@ -1,0 +1,42 @@
+---
+- name: Set architecture for cue binary
+  ansible.builtin.set_fact:
+    cue_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Create temporary directory for download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: cue_install
+  register: cue_temp_dir
+
+- name: Download cue tarball
+  ansible.builtin.get_url:
+    url: "https://github.com/cue-lang/cue/releases/download/{{ cue_version }}/cue_{{ cue_version }}_linux_{{ cue_arch }}.tar.gz"
+    dest: "{{ cue_temp_dir.path }}/cue.tar.gz"
+
+- name: Unarchive cue tarball
+  ansible.builtin.unarchive:
+    src: "{{ cue_temp_dir.path }}/cue.tar.gz"
+    dest: "{{ cue_temp_dir.path }}"
+    remote_src: true
+
+- name: Install cue to binary path
+  ansible.builtin.copy:
+    src: "{{ cue_temp_dir.path }}/cue"
+    dest: "{{ cue_install_path }}/cue"
+    mode: "0755"
+    remote_src: true
+
+- name: Remove temporary directory
+  ansible.builtin.file:
+    path: "{{ cue_temp_dir.path }}"
+    state: absent
+
+- name: Verify cue installation
+  ansible.builtin.command: "{{ cue_install_path }}/cue version"
+  register: cue_check
+  changed_when: false
+
+- name: Show cue version
+  ansible.builtin.debug:
+    msg: "{{ cue_check.stdout_lines[0] }}"

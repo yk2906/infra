@@ -1,0 +1,16 @@
+---
+- name: Install uv via official installer script
+  ansible.builtin.shell: |
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="{{ uv_install_dir }}" sh
+  args:
+    creates: "{{ uv_install_dir }}/uv"
+    executable: /bin/bash
+
+- name: Verify uv installation
+  ansible.builtin.command: "{{ uv_install_dir }}/uv --version"
+  register: uv_check
+  changed_when: false
+
+- name: Show uv version
+  ansible.builtin.debug:
+    msg: "{{ uv_check.stdout }}"

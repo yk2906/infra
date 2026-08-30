@@ -1,0 +1,31 @@
+---
+# ホームラボ機向けの開発ツール一式を導入する playbook
+# 元ネタ: Dockerfile記載の開発コンテナ構成から、ホームラボ用途で使う分だけを移植
+#   (AWS専用の eksctl や DB系の mysql-client などは対象外)
+#
+# 実行例:
+#   ansible-playbook -i inventory install-devtools.yml -l homelab
+#
+# 個別導入したい場合は --tags で絞り込み可能:
+#   ansible-playbook -i inventory install-devtools.yml -l homelab --tags helm,kind
+#
+- name: Install dev tools on target host
+  hosts: all
+  become: true
+  roles:
+    - role: dev_tools_apt
+      tags: apt
+    - role: yq
+      tags: yq
+    - role: cue
+      tags: cue
+    - role: uv
+      tags: uv
+    - role: kind
+      tags: kind
+    - role: helm
+      tags: helm
+    - role: nodejs
+      tags: nodejs
+    - role: claude_code_cli
+      tags: claude_code

@@ -1,0 +1,43 @@
+---
+- name: Ensure keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download Claude Code apt signing key
+  ansible.builtin.get_url:
+    url: https://downloads.claude.ai/keys/claude-code.asc
+    dest: /etc/apt/keyrings/claude-code.asc
+
+- name: Read Claude Code apt key fingerprint
+  ansible.builtin.command: >-
+    gpg --show-keys --with-colons --with-fingerprint /etc/apt/keyrings/claude-code.asc
+  register: claude_code_key_info
+  changed_when: false
+
+- name: Fail if Claude Code apt key fingerprint does not match the expected value
+  ansible.builtin.fail:
+    msg: "Claude Code apt鍵のフィンガープリントが想定値と一致しません。取得元URLの改ざんの可能性があるため中断します。"
+  when: claude_code_key_fingerprint not in claude_code_key_info.stdout
+
+- name: Add Claude Code apt repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/claude-code.list
+    content: "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/stable stable main\n"
+    mode: "0644"
+
+- name: Install Claude Code CLI
+  ansible.builtin.apt:
+    name: claude-code
+    state: present
+    update_cache: true
+
+- name: Verify Claude Code CLI installation
+  ansible.builtin.command: claude --version
+  register: claude_code_check
+  changed_when: false
+
+- name: Show Claude Code CLI version
+  ansible.builtin.debug:
+    msg: "{{ claude_code_check.stdout }}"
