@@ -37,11 +37,13 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
 ├── install-sops.yml # localhost に SOPS（getsops/sops の Linux バイナリ）
 ├── install-kubectx.yml # kubectx（connection: local）
 ├── install-kubens.yml # kubens（connection: local）
-├── install-devtools.yml # ホームラボ機向け開発ツール一式（jq/tmux/fzf等 + yq/cue/uv/kind/helm/Node.js/Claude Code CLI）
-├── setup-homelab.yml # setup-linux.yml + install-devtools.yml をまとめて import（ホームラボ機の初期セットアップ用）
+├── install-devtools.yml # 汎用ホスト向け開発ツール一式（jq/tmux/fzf等 + yq/cue/uv/kind/helm/Node.js(apt)/Claude Code CLI）
+├── setup-homelab.yml # setup-linux.yml + install-devtools.yml をまとめて import（汎用ホスト向け初期セットアップ用）
+├── install-homelab-parity.yml # WSL実環境をそのまま再現するホームラボ機（自宅ミニPC）専用playbook
 ├── group_vars/
 │   └── homelab.yml # homelab グループ（自宅ミニPC）専用の変数
 └── roles/
+    ├── arch_fact/ # amd64/arm64判定の共通role（他roleからmeta依存として参照される）
     ├── docker/
     ├── k3s/
     ├── kubectl/
@@ -50,14 +52,27 @@ Linux サーバー上に kind クラスタを構築する流れ（ユーザー�
     ├── kubectx/
     ├── kubens/
     ├── user_k8s/
-    ├── dev_tools_apt/ # jq/tmux/make/lsof/socat/fzf/ripgrep/python3等
+    ├── dev_tools_apt/ # jq/tmux/make/lsof/socat/fzf/ripgrep/python3等（WSL実機のapt-mark showmanualを反映）
     ├── yq/
     ├── cue/
     ├── uv/
     ├── kind/
     ├── helm/
-    ├── nodejs/
-    └── claude_code_cli/
+    ├── helm_secrets/ # helm-secretsプラグイン
+    ├── nodejs/ # Node.js（nodesource apt方式。汎用ホスト向け）
+    ├── nvm/ # Node.js（nvm方式。ホームラボ機のWSL実環境に合わせたもの）
+    ├── claude_code_cli/ # ネイティブインストーラー方式
+    ├── tailscale/
+    ├── gh_cli/
+    ├── tfenv/ # Terraformバージョン管理（tenvではなくtfenv。WSL実機に合わせている）
+    ├── gcloud_sdk/
+    ├── awscli/
+    ├── golang/
+    ├── chezmoi/ # dotfiles管理。GitHub鍵登録は--tags chezmoi_keygen/chezmoi_applyの2段階
+    ├── eksctl/
+    ├── cosign/
+    ├── argocd_cli/ # ArgoCD CLIバイナリ（install-argocd.ymlのHelmデプロイとは別物）
+    └── cilium_cli/
 ```
 
 `setup-kind.yml` はロールではなくプレイ内タスクで Docker（`docker.io` パッケージ）を入れます。`roles/docker`（Docker CE リポジトリ）とは手順が異なります。
@@ -89,6 +104,26 @@ ansible-playbook -i inventory setup-homelab.yml -l homelab -u <初期ログイ�
 # 2回目以降（group_vars/homelab.yml の鍵で接続）
 ansible-playbook -i inventory setup-homelab.yml -l homelab -u ansible
 ```
+
+### ホームラボ機のWSL実環境パリティ（`install-homelab-parity.yml`）
+
+自宅ミニPC（Linux Mint）をWSL2の開発環境と同等にするための専用playbookです。`setup-linux.yml`のユーザー作成（ansible/k8s別アカウント）は行わず、ログインユーザー本人（例: `yk2906`）に対して直接実行します。root権限が必要なroleと、ユーザーのホームディレクトリ配下に導入するroleを分けて `become` を個別指定しています。
+
+```bash
+ansible-playbook -i inventory install-homelab-parity.yml -l homelab -u yk2906
+```
+
+chezmoiによるGitHub鍵登録は2段階です。
+
+```bash
+# 1. 鍵生成（表示された公開鍵を https://github.com/settings/keys に手動登録する）
+ansible-playbook -i inventory install-homelab-parity.yml -l homelab --tags chezmoi_keygen
+
+# 2. GitHub登録後、dotfilesを取得・適用
+ansible-playbook -i inventory install-homelab-parity.yml -l homelab --tags chezmoi_apply
+```
+
+`install-devtools.yml`（Node.jsをnodesource apt方式、Claude Code CLIをapt方式で導入）とは異なり、こちらはWSL実機の実態（nvm、ネイティブインストーラー、tfenv等）に合わせた選択をしています。両者は用途が異なるため統合していません。
 
 ## セットアップ手順（kind）
 

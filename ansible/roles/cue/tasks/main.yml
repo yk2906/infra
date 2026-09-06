@@ -1,8 +1,4 @@
 ---
-- name: Set architecture for cue binary
-  ansible.builtin.set_fact:
-    cue_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-
 - name: Create temporary directory for download
   ansible.builtin.tempfile:
     state: directory
@@ -11,7 +7,7 @@
 
 - name: Download cue tarball
   ansible.builtin.get_url:
-    url: "https://github.com/cue-lang/cue/releases/download/{{ cue_version }}/cue_{{ cue_version }}_linux_{{ cue_arch }}.tar.gz"
+    url: "https://github.com/cue-lang/cue/releases/download/{{ cue_version }}/cue_{{ cue_version }}_linux_{{ system_arch }}.tar.gz"
     dest: "{{ cue_temp_dir.path }}/cue.tar.gz"
 
 - name: Unarchive cue tarball

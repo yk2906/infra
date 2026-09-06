@@ -1,0 +1,7 @@
+---
+# amd64/arm64 のリリースバイナリ命名規則に合わせたアーキテクチャ判定。
+# 複数roleから role dependency として参照される共通role（10roleで重複していたロジックを集約）。
+- name: Determine system architecture (amd64/arm64)
+  ansible.builtin.set_fact:
+    system_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+  when: system_arch is not defined

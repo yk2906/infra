@@ -1,8 +1,4 @@
 ---
-- name: Set architecture for Cilium CLI tarball
-  ansible.builtin.set_fact:
-    cilium_cli_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-
 - name: Get latest stable Cilium CLI version
   ansible.builtin.uri:
     url: https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt
@@ -15,7 +11,7 @@
 
 - name: Download and extract Cilium CLI
   ansible.builtin.unarchive:
-    src: "https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-{{ cilium_cli_arch }}.tar.gz"
+    src: "https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-{{ system_arch }}.tar.gz"
     dest: /usr/local/bin
     remote_src: true
     creates: /usr/local/bin/cilium

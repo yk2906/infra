@@ -1,8 +1,4 @@
 ---
-- name: Set architecture for eksctl tarball
-  ansible.builtin.set_fact:
-    eksctl_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-
 - name: Get latest eksctl release tag
   ansible.builtin.uri:
     url: https://api.github.com/repos/eksctl-io/eksctl/releases/latest
@@ -17,7 +13,7 @@
 
 - name: Download eksctl tarball
   ansible.builtin.get_url:
-    url: "https://github.com/eksctl-io/eksctl/releases/download/{{ eksctl_latest_release.json.tag_name }}/eksctl_Linux_{{ eksctl_arch }}.tar.gz"
+    url: "https://github.com/eksctl-io/eksctl/releases/download/{{ eksctl_latest_release.json.tag_name }}/eksctl_Linux_{{ system_arch }}.tar.gz"
     dest: "{{ eksctl_temp_dir.path }}/eksctl.tar.gz"
 
 - name: Unarchive eksctl tarball

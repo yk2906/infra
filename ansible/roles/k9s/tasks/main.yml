@@ -1,8 +1,4 @@
 ---
-- name: Get system architecture
-  ansible.builtin.set_fact:
-    arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-
 - name: Create temporary directory for download
   ansible.builtin.tempfile:
     state: directory
@@ -11,7 +7,7 @@
 
 - name: Download k9s binary tarball
   ansible.builtin.get_url:
-    url: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_{{ arch }}.tar.gz"
+    url: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_{{ system_arch }}.tar.gz"
     dest: "{{ temp_dir.path }}/k9s.tar.gz"
 
 - name: Unarchive k9s binary
