@@ -1,6 +1,8 @@
 ---
 # ホームラボ(自宅ミニPC)向け設定
 # 対象ホストは inventory の [homelab] グループに追加する
+# 個人利用の単一ユーザー機のため、setup-linux.yml の ansible/k8s ユーザー作成は行わず
+# ログインユーザー本人(yk2906)に対して直接プレイブックを実行する運用とする。
 
-ansible_user: ansible
-public_key_path: "~/.ssh/homelab_key.pub"
+ansible_user: yk2906
+ansible_ssh_private_key_file: "~/.ssh/homelab_key"

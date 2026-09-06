@@ -8,6 +8,9 @@
     url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/{{ kubectl_arch }}/kubectl"
     dest: "{{ kubectl_install_path }}"
     mode: "0755"
+    # Last-Modifiedベースの鮮度判定はバージョン切り替え時に誤って「変更なし」と判定することがあるため、
+    # チェックサムで確実に対象バージョンかどうかを検証する
+    checksum: "sha256:{{ lookup('ansible.builtin.url', 'https://dl.k8s.io/release/' + kubectl_version + '/bin/linux/' + kubectl_arch + '/kubectl.sha256', split_lines=False) }}"
 
 - name: Verify kubectl client version
   ansible.builtin.command: "{{ kubectl_install_path }} version --client"

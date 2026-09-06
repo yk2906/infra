@@ -1,0 +1,36 @@
+---
+- name: Create temporary directory for download
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: awscli_install
+  register: awscli_temp_dir
+
+- name: Download AWS CLI v2 installer bundle
+  ansible.builtin.get_url:
+    url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    dest: "{{ awscli_temp_dir.path }}/awscliv2.zip"
+
+- name: Unarchive AWS CLI v2 installer
+  ansible.builtin.unarchive:
+    src: "{{ awscli_temp_dir.path }}/awscliv2.zip"
+    dest: "{{ awscli_temp_dir.path }}"
+    remote_src: true
+
+- name: Run AWS CLI v2 installer
+  ansible.builtin.command: "{{ awscli_temp_dir.path }}/aws/install"
+  args:
+    creates: /usr/local/bin/aws
+
+- name: Remove temporary directory
+  ansible.builtin.file:
+    path: "{{ awscli_temp_dir.path }}"
+    state: absent
+
+- name: Verify AWS CLI installation
+  ansible.builtin.command: aws --version
+  register: awscli_check
+  changed_when: false
+
+- name: Show AWS CLI version
+  ansible.builtin.debug:
+    msg: "{{ awscli_check.stdout }}"

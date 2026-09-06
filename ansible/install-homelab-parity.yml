@@ -1,0 +1,46 @@
+---
+# WSL2側の実際の開発環境(apt manual list / npm global / dotfiles等を実地調査した結果)を
+# ホームラボ機(自宅ミニPC)に再現する playbook。
+# setup-linux.yml とは異なり、ansible/k8s の別ユーザーは作成せず、ログインユーザー本人に対して実行する。
+#
+# 実行例:
+#   ansible-playbook -i inventory install-homelab-parity.yml -l homelab -u yk2906
+#
+# chezmoi の GitHub 鍵登録は2段階:
+#   1. ansible-playbook ... --tags chezmoi_keygen  → 表示された公開鍵をGitHubに手動登録
+#   2. ansible-playbook ... --tags chezmoi_apply   → dotfilesを取得・適用
+#
+- name: Replicate WSL dev environment on homelab host
+  hosts: all
+  become: false
+  vars:
+    kubectl_version: "v1.36.4"
+
+  roles:
+    # --- root権限が必要（apt / /usr/local 配下への導入） ---
+    - { role: dev_tools_apt, become: true, tags: apt }
+    - { role: gh_cli, become: true, tags: gh }
+    - { role: tailscale, become: true, tags: tailscale }
+    - { role: docker, become: true, tags: docker }
+    - { role: kubectl, become: true, tags: kubectl }
+    - { role: k9s, become: true, tags: k9s }
+    - { role: kubectx, become: true, tags: kubectx_tools }
+    - { role: kubens, become: true, tags: kubectx_tools }
+    - { role: helm, become: true, tags: helm }
+    - { role: golang, become: true, tags: golang }
+    - { role: awscli, become: true, tags: awscli }
+    - { role: eksctl, become: true, tags: eksctl }
+    - { role: cosign, become: true, tags: cosign }
+    - { role: argocd_cli, become: true, tags: argocd_cli }
+    - { role: cilium_cli, become: true, tags: cilium }
+    - { role: cue, become: true, tags: cue }
+    - { role: kind, become: true, tags: kind }
+
+    # --- ユーザーのホームディレクトリ配下（root不要） ---
+    - { role: tfenv, become: false, tags: tfenv }
+    - { role: gcloud_sdk, become: false, tags: gcloud }
+    - { role: uv, become: false, tags: uv }
+    - { role: nvm, become: false, tags: nvm }
+    - { role: claude_code_cli, become: false, tags: claude_code }
+    - { role: helm_secrets, become: false, tags: helm_secrets }
+    - { role: chezmoi, become: false, tags: [chezmoi_keygen, chezmoi_apply] }

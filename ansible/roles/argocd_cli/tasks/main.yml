@@ -1,0 +1,19 @@
+---
+- name: Set architecture for ArgoCD CLI binary
+  ansible.builtin.set_fact:
+    argocd_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Download ArgoCD CLI binary
+  ansible.builtin.get_url:
+    url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-{{ argocd_arch }}"
+    dest: /usr/local/bin/argocd
+    mode: "0755"
+
+- name: Verify ArgoCD CLI installation
+  ansible.builtin.command: argocd version --client
+  register: argocd_cli_check
+  changed_when: false
+
+- name: Show ArgoCD CLI version
+  ansible.builtin.debug:
+    msg: "{{ argocd_cli_check.stdout_lines }}"

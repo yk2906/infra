@@ -11,5 +11,5 @@ localhost
 [windows]
 
 [homelab]
-# ミニPC到着後、IPアドレスをここに追加する
+192.168.3.7
 

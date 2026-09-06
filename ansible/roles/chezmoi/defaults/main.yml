@@ -1,0 +1,3 @@
+---
+chezmoi_dotfiles_repo: "git@github.com:yk2906/dotfiles.git"
+chezmoi_github_key_path: "{{ ansible_env.HOME }}/.ssh/id_ed25519_github"

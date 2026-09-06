@@ -12,5 +12,22 @@
       - python3
       - python3-venv
       - bubblewrap
+      - git
+      - curl
+      - gnupg
+      - dirmngr
+      - rsync
+      - tree
+      - unzip
+      - wget
+      - nmap
+      - whois
+      - net-tools
+      - less
+      - vim
+      - ansible
+      - python3-netaddr
+      - mysql-client
+      - connect-proxy
     state: present
     update_cache: true

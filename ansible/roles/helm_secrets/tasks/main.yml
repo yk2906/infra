@@ -1,0 +1,16 @@
+---
+# helmプラグインはユーザーのホームディレクトリ配下に導入されるため、become: false での実行を想定
+- name: Install helm-secrets plugin
+  ansible.builtin.command: >-
+    helm plugin install https://github.com/jkroepke/helm-secrets --version {{ helm_secrets_version }}
+  args:
+    creates: "{{ ansible_env.HOME }}/.local/share/helm/plugins/helm-secrets"
+
+- name: Verify helm-secrets plugin installation
+  ansible.builtin.command: helm secrets --help
+  register: helm_secrets_check
+  changed_when: false
+
+- name: Show helm-secrets plugin status
+  ansible.builtin.debug:
+    msg: "helm-secrets plugin installed ({{ helm_secrets_version }})"

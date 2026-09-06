@@ -1,0 +1,66 @@
+---
+# 実行例:
+#   1. 鍵生成のみ: --tags chezmoi_keygen （出力された公開鍵をGitHubに手動登録する）
+#   2. GitHub登録後: --tags chezmoi_apply （dotfilesの取得・適用）
+
+- name: Install chezmoi via official installer script
+  ansible.builtin.shell: |
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "{{ ansible_env.HOME }}/bin"
+  args:
+    creates: "{{ ansible_env.HOME }}/bin/chezmoi"
+    executable: /bin/bash
+  tags: [chezmoi_keygen, chezmoi_apply]
+
+- name: Generate dedicated GitHub SSH key for this host
+  ansible.builtin.command: >-
+    ssh-keygen -t ed25519 -f {{ chezmoi_github_key_path }} -N "" -C "{{ inventory_hostname }}-github"
+  args:
+    creates: "{{ chezmoi_github_key_path }}"
+  tags: [chezmoi_keygen]
+
+- name: Ensure ~/.ssh directory permissions
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: '0700'
+  tags: [chezmoi_keygen]
+
+- name: Add github.com SSH config entry for the dedicated key
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.ssh/config"
+    create: true
+    mode: '0600'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (github.com dedicated key)"
+    block: |
+      Host github.com
+          HostName github.com
+          User git
+          IdentityFile {{ chezmoi_github_key_path }}
+  tags: [chezmoi_keygen]
+
+- name: Pre-populate known_hosts for github.com
+  ansible.builtin.shell: |
+    ssh-keyscan -H github.com >> {{ ansible_env.HOME }}/.ssh/known_hosts
+  args:
+    creates: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+  tags: [chezmoi_keygen]
+
+- name: Read generated public key
+  ansible.builtin.slurp:
+    src: "{{ chezmoi_github_key_path }}.pub"
+  register: chezmoi_github_pubkey
+  tags: [chezmoi_keygen]
+
+- name: Show public key to register on GitHub
+  ansible.builtin.debug:
+    msg: >-
+      以下の公開鍵を https://github.com/settings/keys に手動で登録してください:
+      {{ chezmoi_github_pubkey.content | b64decode | trim }}
+  tags: [chezmoi_keygen]
+
+- name: Initialize and apply dotfiles via chezmoi
+  ansible.builtin.command: >-
+    {{ ansible_env.HOME }}/bin/chezmoi init --apply {{ chezmoi_dotfiles_repo }}
+  args:
+    creates: "{{ ansible_env.HOME }}/.local/share/chezmoi/.git"
+  tags: [chezmoi_apply]

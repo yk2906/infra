@@ -1,2 +1,2 @@
 ---
-claude_code_key_fingerprint: "31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE"
+# ネイティブインストーラー方式のため、apt鍵フィンガープリント等の変数は不要

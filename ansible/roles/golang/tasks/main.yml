@@ -1,0 +1,30 @@
+---
+- name: Set architecture for Go tarball
+  ansible.builtin.set_fact:
+    golang_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+
+- name: Download Go tarball
+  ansible.builtin.get_url:
+    url: "https://go.dev/dl/go{{ golang_version }}.linux-{{ golang_arch }}.tar.gz"
+    dest: "/tmp/go{{ golang_version }}.linux-{{ golang_arch }}.tar.gz"
+
+- name: Extract Go tarball
+  ansible.builtin.unarchive:
+    src: "/tmp/go{{ golang_version }}.linux-{{ golang_arch }}.tar.gz"
+    dest: "{{ golang_install_root }}"
+    remote_src: true
+    creates: "{{ golang_install_root }}/go/bin/go"
+
+- name: Remove downloaded tarball
+  ansible.builtin.file:
+    path: "/tmp/go{{ golang_version }}.linux-{{ golang_arch }}.tar.gz"
+    state: absent
+
+- name: Verify Go installation
+  ansible.builtin.command: "{{ golang_install_root }}/go/bin/go version"
+  register: golang_check
+  changed_when: false
+
+- name: Show Go version
+  ansible.builtin.debug:
+    msg: "{{ golang_check.stdout }}"

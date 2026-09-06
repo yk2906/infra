@@ -1,0 +1,37 @@
+---
+- name: Set architecture for Google Cloud SDK tarball
+  ansible.builtin.set_fact:
+    gcloud_arch: "{{ 'x86_64' if ansible_architecture == 'x86_64' else 'arm' }}"
+
+- name: Download Google Cloud SDK tarball
+  ansible.builtin.get_url:
+    url: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-{{ gcloud_arch }}.tar.gz"
+    dest: "/tmp/google-cloud-cli.tar.gz"
+
+- name: Extract Google Cloud SDK to home directory
+  ansible.builtin.unarchive:
+    src: "/tmp/google-cloud-cli.tar.gz"
+    dest: "{{ ansible_env.HOME }}"
+    remote_src: true
+    creates: "{{ ansible_env.HOME }}/google-cloud-sdk/bin/gcloud"
+
+- name: Remove downloaded tarball
+  ansible.builtin.file:
+    path: "/tmp/google-cloud-cli.tar.gz"
+    state: absent
+
+- name: Run gcloud SDK install script (skip PATH/completion edits; chezmoi manages .bashrc)
+  ansible.builtin.command: >-
+    {{ ansible_env.HOME }}/google-cloud-sdk/install.sh
+    --usage-reporting=false --command-completion=false --path-update=false --quiet
+  register: gcloud_install_result
+  changed_when: false
+
+- name: Verify gcloud installation
+  ansible.builtin.command: "{{ ansible_env.HOME }}/google-cloud-sdk/bin/gcloud --version"
+  register: gcloud_check
+  changed_when: false
+
+- name: Show gcloud version
+  ansible.builtin.debug:
+    msg: "{{ gcloud_check.stdout_lines[0] }}"

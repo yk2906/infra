@@ -1,0 +1,22 @@
+---
+- name: Install Tailscale via official installer script
+  ansible.builtin.shell: |
+    curl -fsSL https://tailscale.com/install.sh | sh
+  args:
+    creates: /usr/bin/tailscale
+    executable: /bin/bash
+
+- name: Verify Tailscale installation
+  ansible.builtin.command: tailscale version
+  register: tailscale_check
+  changed_when: false
+
+- name: Show Tailscale version
+  ansible.builtin.debug:
+    msg: "{{ tailscale_check.stdout_lines[0] }}"
+
+- name: Note about tailscale up
+  ansible.builtin.debug:
+    msg: >-
+      Tailscaleのインストールのみ完了しました。認証・ネットワーク参加は
+      対象ホスト上で `sudo tailscale up` を手動実行してください（ブラウザ認証が必要なため自動化していません）。

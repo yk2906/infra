@@ -1,0 +1,25 @@
+---
+- name: Clone tfenv repository
+  ansible.builtin.git:
+    repo: https://github.com/tfutils/tfenv.git
+    dest: "{{ ansible_env.HOME }}/.tfenv"
+    depth: 1
+
+- name: Install pinned Terraform version via tfenv
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.tfenv/bin/tfenv install {{ tfenv_terraform_version }}"
+  args:
+    creates: "{{ ansible_env.HOME }}/.tfenv/versions/{{ tfenv_terraform_version }}/terraform"
+
+- name: Set active Terraform version via tfenv
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.tfenv/bin/tfenv use {{ tfenv_terraform_version }}"
+  register: tfenv_use_result
+  changed_when: "'is already' not in tfenv_use_result.stdout"
+
+- name: Verify Terraform installation
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.tfenv/bin/terraform version"
+  register: tfenv_check
+  changed_when: false
+
+- name: Show Terraform version
+  ansible.builtin.debug:
+    msg: "{{ tfenv_check.stdout_lines[0] }}"
