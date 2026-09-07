@@ -42,6 +42,7 @@
     - { role: uv, become: false, tags: uv }
     - { role: nvm, become: false, tags: nvm }
     - { role: clasp, become: false, tags: clasp }
+    - { role: wrangler, become: false, tags: wrangler }
     - { role: claude_code_cli, become: false, tags: claude_code }
     - { role: helm_secrets, become: false, tags: helm_secrets }
     - { role: chezmoi, become: false, tags: [chezmoi_keygen, chezmoi_apply] }

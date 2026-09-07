@@ -1,0 +1,25 @@
+---
+# nvm経由でNode.jsが導入済みであることが前提（roles/nvmに依存）
+- name: Install wrangler (Cloudflare Workers CLI) via npm
+  ansible.builtin.shell: |
+    export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    npm install -g wrangler
+  args:
+    executable: /bin/bash
+  register: wrangler_install_result
+  changed_when: "'up to date' not in wrangler_install_result.stdout"
+
+- name: Verify wrangler installation
+  ansible.builtin.shell: |
+    export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    wrangler --version
+  args:
+    executable: /bin/bash
+  register: wrangler_check
+  changed_when: false
+
+- name: Show wrangler version
+  ansible.builtin.debug:
+    msg: "{{ wrangler_check.stdout }}"
