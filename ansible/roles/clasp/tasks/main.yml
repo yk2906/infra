@@ -1,0 +1,25 @@
+---
+# nvm経由でNode.jsが導入済みであることが前提（roles/nvmに依存）
+- name: Install clasp (Google Apps Script CLI) via npm
+  ansible.builtin.shell: |
+    export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    npm install -g @google/clasp
+  args:
+    executable: /bin/bash
+  register: clasp_install_result
+  changed_when: "'up to date' not in clasp_install_result.stdout"
+
+- name: Verify clasp installation
+  ansible.builtin.shell: |
+    export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    clasp --version
+  args:
+    executable: /bin/bash
+  register: clasp_check
+  changed_when: false
+
+- name: Show clasp version
+  ansible.builtin.debug:
+    msg: "{{ clasp_check.stdout }}"
