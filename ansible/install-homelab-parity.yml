@@ -28,6 +28,7 @@
     - { role: kubens, become: true, tags: kubectx_tools }
     - { role: helm, become: true, tags: helm }
     - { role: golang, become: true, tags: golang }
+    - { role: go_dev_tools, become: false, tags: go_dev_tools }
     - { role: awscli, become: true, tags: awscli }
     - { role: eksctl, become: true, tags: eksctl }
     - { role: cosign, become: true, tags: cosign }
@@ -46,3 +47,4 @@
     - { role: claude_code_cli, become: false, tags: claude_code }
     - { role: helm_secrets, become: false, tags: helm_secrets }
     - { role: chezmoi, become: false, tags: [chezmoi_keygen, chezmoi_apply] }
+    - { role: vscode_go_extension, become: false, tags: vscode_go }

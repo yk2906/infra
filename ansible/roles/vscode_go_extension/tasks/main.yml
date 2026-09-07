@@ -1,0 +1,40 @@
+---
+# VS Code の Go拡張機能(golang.go)を導入する。
+# デスクトップ版の `code` があればそれを、無ければ VS Code Server の remote-cli を探して使う。
+# どちらも見つからない場合はスキップする(まだVS Codeで接続したことがないまっさらな機体を想定)。
+- name: Locate a code CLI binary
+  ansible.builtin.shell: |
+    set -o pipefail
+    if command -v code >/dev/null 2>&1; then
+      command -v code
+    else
+      find "{{ ansible_env.HOME }}/.vscode-server/cli/servers" \
+        -maxdepth 4 -path "*/remote-cli/code" -type f 2>/dev/null | head -n1
+    fi
+  args:
+    executable: /bin/bash
+  register: vscode_code_cli
+  changed_when: false
+  failed_when: false
+
+- name: Check whether the Go extension is already installed
+  ansible.builtin.command: "{{ vscode_code_cli.stdout }} --list-extensions"
+  when: vscode_code_cli.stdout | trim | length > 0
+  register: vscode_installed_extensions
+  changed_when: false
+  failed_when: false
+
+# --list-extensions の出力は拡張機能IDそのもの(ロケール非依存)なので、
+# 表示メッセージの文言比較(ロケールで変わる)より確実に判定できる。
+- name: Install VS Code Go extension
+  ansible.builtin.command: "{{ vscode_code_cli.stdout }} --install-extension golang.go"
+  when: >-
+    vscode_code_cli.stdout | trim | length > 0
+    and 'golang.go' not in (vscode_installed_extensions.stdout_lines | default([]))
+  register: vscode_go_extension_install
+  changed_when: true
+
+- name: Warn if no code CLI was found
+  ansible.builtin.debug:
+    msg: "code CLIが見つからなかったため、Go拡張機能のインストールをスキップしました。VS Codeで一度接続してから再実行してください。"
+  when: vscode_code_cli.stdout | trim | length == 0

@@ -1,0 +1,35 @@
+---
+# gopls/dlv/golangci-lint/goimports を `go install` で導入する。
+# ルート権限は不要（{{ go_dev_tools_bin_dir }} = ~/go/bin 配下にインストールされる）。
+- name: Install Go dev tools via go install
+  ansible.builtin.command: "{{ golang_install_root }}/go/bin/go install {{ item.module }}"
+  args:
+    creates: "{{ go_dev_tools_bin_dir }}/{{ item.binary }}"
+  environment:
+    GOPATH: "{{ ansible_env.HOME }}/go"
+    PATH: "{{ golang_install_root }}/go/bin:{{ ansible_env.PATH }}"
+  loop: "{{ go_dev_tools }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Verify Go dev tools installation
+  ansible.builtin.command: "{{ go_dev_tools_bin_dir }}/{{ item.binary }} version"
+  register: go_dev_tools_check
+  changed_when: false
+  failed_when: false
+  loop: "{{ go_dev_tools }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Show Go dev tools versions
+  vars:
+    tool_stdout: "{{ item.stdout | default('') | trim }}"
+    tool_stderr: "{{ item.stderr | default('') | trim }}"
+  ansible.builtin.debug:
+    msg: >-
+      {{ item.item.name }}:
+      {{ tool_stdout if tool_stdout | length > 0
+         else (tool_stderr if tool_stderr | length > 0 else '(check mode - not run)') }}
+  loop: "{{ go_dev_tools_check.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"

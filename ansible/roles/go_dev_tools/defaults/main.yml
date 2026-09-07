@@ -1,0 +1,20 @@
+---
+go_dev_tools_bin_dir: "{{ ansible_env.HOME }}/go/bin"
+go_dev_tools:
+  - name: gopls
+    module: "golang.org/x/tools/gopls@{{ gopls_version }}"
+    binary: gopls
+  - name: dlv
+    module: "github.com/go-delve/delve/cmd/dlv@{{ dlv_version }}"
+    binary: dlv
+  - name: golangci-lint
+    module: "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{ golangci_lint_version }}"
+    binary: golangci-lint
+  - name: goimports
+    module: "golang.org/x/tools/cmd/goimports@{{ goimports_version }}"
+    binary: goimports
+
+gopls_version: "v0.23.0"
+dlv_version: "v1.27.1"
+golangci_lint_version: "v2.13.2"
+goimports_version: "v0.49.0"
