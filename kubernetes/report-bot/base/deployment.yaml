@@ -5,9 +5,7 @@ metadata:
   labels:
     app: report-bot
 spec:
-  # 初回のCI実行(GHCRへの実イメージpush)が完了するまでは0にしておく。
-  # 完了したら1に上げる(weatherアプリと同じブートストラップ手順)。
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: report-bot
