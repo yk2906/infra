@@ -37,6 +37,12 @@ spec:
                 secretKeyRef:
                   name: smtp-credential
                   key: password
+            - name: SHEETS_SERVICE_ACCOUNT_FILE
+              value: "/etc/report-bot/sheets/credentials.json"
+          volumeMounts:
+            - name: sheets-service-account
+              mountPath: /etc/report-bot/sheets
+              readOnly: true
           resources:
             requests:
               cpu: "50m"
@@ -56,3 +62,7 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: sheets-service-account
+          secret:
+            secretName: sheets-service-account
