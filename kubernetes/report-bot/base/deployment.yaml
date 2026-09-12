@@ -25,6 +25,8 @@ spec:
               value: "mail.bold.ne.jp"
             - name: SMTP_PORT
               value: "587"
+            - name: SMTP_TLS_SERVER_NAME
+              value: "extremeserv.net"
             - name: SMTP_USERNAME
               valueFrom:
                 secretKeyRef:
