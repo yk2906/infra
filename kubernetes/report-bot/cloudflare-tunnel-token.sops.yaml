@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: cloudflare-tunnel-token
+    namespace: report-bot
+stringData:
+    token: ENC[AES256_GCM,data:AiB6bb+tznLKY9OOlDxuA6x57nZD0I1Owkj23Vugy6eBWL5+dTJOWpMwNgelKqO79L0ohYEtuINYXISJUfKhu+g7gjjET5FADLjkTD/O7olV8ZsBFgMlOfyamIuYO+GLkRZWkTTvp6oXFHrQvyeO+mbo7c710zcwsc0wemPAE+fQyiSt55J61C3ooXLbXSoAJbhZuV0b8U8dmFVSRd6zRbsHU1iqnirM2AaYL7dE1yvGtp9Q,iv:8BzkTGucGKmeRbtEgBaz7uMg/ypjRuLryc9cHeoUrVI=,tag:I3fZLomvc2uLaIPuO6naqw==,type:str]
+type: Opaque
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPSTRPWmZXTzJuaW5PVlNT
+            NnlwVWo5ZTBpUysvZ2xsaUJpT2k2NHZXOG5zCi9LN1NTSGdRc3FSeklDOW9kekNJ
+            VjJQU0hVbEEwWXZ0QWVuNnU3ajNLMDgKLS0tIEZzMXA1MXljeldORUtjQ0RxNFFl
+            N0cvTmZiVU9RM3FKd0ZhSDZOUk9BaXcKAOE+yFV1NbDd1LxKOOo90DkENuZrzH6m
+            vmKujJAFOOMh+i9PThzP/figz8f7XGUsxws5Cw6zgeOT81B4Hho0og==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1u9tkn00xqk4rfa9y9mkyfyts9vqw4vpvh4aa74egqdg8z73stapqhu5pu4
+    encrypted_regex: ^(stringData|data)$
+    lastmodified: "2026-09-12T08:03:03Z"
+    mac: ENC[AES256_GCM,data:kAQ4CZaOnFQYacIaYN1a7goM/NNVn/LHEr3MFQ6Kins7pU+D2GcZ2Q3XB26Uv/6A+rLgOsCiN5GssTJOMM6aJjEbyRieHOxReh+0BvG96M1qpggrZSry87kN/jgDC42EJ0cvw4a+h+mtrJbZM4vVDnMUx/bRooPmko9V7p1QaUc=,iv:UkeE+H85wMmvVeQzoOoodjT7eN2RmzFiOEeLGLO9Z3M=,tag:sxm9MoaSJx0ezvLzLpTHXA==,type:str]
+    version: 3.13.0
