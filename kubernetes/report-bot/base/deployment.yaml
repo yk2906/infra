@@ -20,6 +20,21 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          env:
+            - name: SMTP_HOST
+              value: "mail.bold.ne.jp"
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-credential
+                  key: username
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-credential
+                  key: password
           resources:
             requests:
               cpu: "50m"
