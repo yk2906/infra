@@ -39,6 +39,11 @@ spec:
                   key: password
             - name: SHEETS_SERVICE_ACCOUNT_FILE
               value: "/etc/report-bot/sheets/credentials.json"
+            - name: SLACK_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: slack-credential
+                  key: signing_secret
           volumeMounts:
             - name: sheets-service-account
               mountPath: /etc/report-bot/sheets
