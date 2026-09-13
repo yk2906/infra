@@ -2,6 +2,7 @@
 # cloudflaredはk8sクラスタ内にDeploymentとして立て、report-bot Serviceへ外向き接続のみで中継する。
 locals {
   cloudflare_account_id = "76ef25bb5eaf05b8a2d2825dd616051c"
+  mamelly_zone_id       = "f8d0ddf4c963e35e758c7d49b81f6fb4"
 }
 
 resource "random_id" "report_bot_tunnel_secret" {
@@ -36,7 +37,7 @@ resource "cloudflare_record" "report_bot_tunnel" {
   content = "${cloudflare_zero_trust_tunnel_cloudflared.report_bot.id}.cfargotunnel.com"
   proxied = true
   ttl     = 1
-  zone_id = "f8d0ddf4c963e35e758c7d49b81f6fb4"
+  zone_id = local.mamelly_zone_id
 }
 
 output "report_bot_tunnel_token" {
