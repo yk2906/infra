@@ -9,4 +9,4 @@ resources:
 images:
 - name: report-bot-image
   newName: ghcr.io/yk2906/report-bot
-  newTag: e20899a43d3f598b9afdf4a5b8a3f04f833b84d7
+  newTag: ced16f1b3cd07ee6ddbf0c3d95f820bb435c1f6d
